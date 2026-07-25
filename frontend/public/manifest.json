@@ -1,0 +1,21 @@
+{
+  "name": "Jeelani Studies Centre",
+  "short_name": "JSC",
+  "description": "A centre for Islamic studies, Sufism, and education",
+  "theme_color": "#f0fdf4",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "https://ik.imagekit.io/aksWebSolutions/JSC/JSC_APP_ICON.png?updatedAt=1754539840889",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://ik.imagekit.io/aksWebSolutions/JSC/JSC_APP_ICON2.png?updatedAt=1754539864015",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

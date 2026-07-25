@@ -1,0 +1,333 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, BookOpen, Eye, EyeOff } from 'lucide-react';
+import axios from 'axios';
+
+const Surah = () => {
+  const { id } = useParams();
+  const [surah, setSurah] = useState(null);
+  const [arabicVerses, setArabicVerses] = useState([]);
+  const [translationVerses, setTranslationVerses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showTranslation, setShowTranslation] = useState(false); // hidden by default
+  const navigate = useNavigate();
+
+  // Manual Fatiha data with Ameen
+  const fatihaData = {
+    surah: {
+      id: 1,
+      name_simple: 'Al-Fatihah',
+      name_arabic: 'الفاتحة',
+      translated_name: { name: 'The Opener' },
+      revelation_place: 'makkah',
+      verses_count: 7,
+    },
+    arabicVerses: [
+      { id: 1, verse_key: '1:1', text_uthmani: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ' },
+      { id: 2, verse_key: '1:2', text_uthmani: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ' },
+      { id: 3, verse_key: '1:3', text_uthmani: 'الرَّحْمَٰنِ الرَّحِيمِ' },
+      { id: 4, verse_key: '1:4', text_uthmani: 'مَالِكِ يَوْمِ الدِّينِ' },
+      { id: 5, verse_key: '1:5', text_uthmani: 'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ' },
+      { id: 6, verse_key: '1:6', text_uthmani: 'اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ' },
+      {
+        id: 7,
+        verse_key: '1:7',
+        text_uthmani:
+          'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ',
+      },
+    ],
+    translationVerses: [
+      { text: 'In the name of Allah, the Entirely Merciful, the Especially Merciful.' },
+      { text: 'All praise is due to Allah, Lord of the worlds -' },
+      { text: 'The Entirely Merciful, the Especially Merciful,' },
+      { text: 'Sovereign of the Day of Recompense.' },
+      { text: 'It is You we worship and You we ask for help.' },
+      { text: 'Guide us to the straight path -' },
+      {
+        text:
+          'The path of those upon whom You have bestowed favor, not of those who have evoked Your anger or of those who are astray.',
+      },
+    ],
+  };
+
+  useEffect(() => {
+    const fetchSurah = async () => {
+      try {
+        if (id === '1') {
+          setSurah(fatihaData.surah);
+          setArabicVerses(fatihaData.arabicVerses);
+          setTranslationVerses(fatihaData.translationVerses);
+          setLoading(false);
+          return;
+        }
+        const [surahInfoRes, arabicRes, translationRes] = await Promise.all([
+          axios.get(`https://api.quran.com/api/v4/chapters/${id}?language=en`),
+          axios.get(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${id}`),
+          axios.get(`https://api.quran.com/api/v4/quran/translations/131?chapter_number=${id}`),
+        ]);
+        setSurah(surahInfoRes.data.chapter);
+        setArabicVerses(arabicRes.data.verses);
+        setTranslationVerses(translationRes.data.translations);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to load Surah. Please try again later.');
+        setLoading(false);
+      }
+    };
+    fetchSurah();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-amber-50 via-emerald-50 to-teal-50">
+        <motion.div
+          className="flex flex-col items-center gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <motion.div
+            className="w-16 h-16 rounded-full border-4 border-emerald-200 border-t-emerald-600"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
+          <p className="text-emerald-700 font-medium text-sm tracking-wide">Loading Surah…</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (error || !surah) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-emerald-50">
+        <p className="text-red-600 font-semibold text-center px-4">{error || 'Surah not found.'}</p>
+      </div>
+    );
+  }
+
+  /* ── Build full Arabic text as a single flowing page ── */
+  const fullArabicText = arabicVerses
+    .map((v, i) => {
+      const num = v.verse_key?.split(':')[1] || i + 1;
+      // Append Arabic verse number glyph after each verse
+      return `${v.text_uthmani} ۝${num}`;
+    })
+    .join('  ');
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-emerald-50 pb-16"
+    >
+      {/* ── Background texture ── */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.025]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23059669' fill-opacity='1'%3E%3Cpath d='M30 0l4 12H18L30 0zm0 60l4-12H18L30 60zM0 30l12 4V18L0 30zm60 0l-12 4V18l12 12z'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundSize: '60px 60px',
+        }}
+      />
+
+      <div className="relative max-w-3xl mx-auto px-4 py-8 pt-24">
+
+        {/* ── Back button ── */}
+        <motion.button
+          className="flex items-center gap-2 text-emerald-700 mb-8 hover:text-emerald-900 transition-colors font-medium group"
+          onClick={() => navigate('/quran')}
+          whileHover={{ x: -4 }}
+          transition={{ duration: 0.15 }}
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          Back to Surahs
+        </motion.button>
+
+        {/* ══════════════════════════════════════════
+            QURAN PAGE — outer parchment border
+        ══════════════════════════════════════════ */}
+        <motion.div
+          className="relative rounded-2xl shadow-2xl overflow-hidden"
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          {/* Outer golden border decoration */}
+          <div className="bg-gradient-to-b from-amber-800 via-amber-700 to-amber-800 p-[3px] rounded-2xl">
+            <div className="bg-gradient-to-b from-amber-50 via-[#fefcf3] to-amber-50 rounded-[14px] overflow-hidden">
+
+              {/* ── Inner ornamental border ── */}
+              <div className="m-3 border-2 border-amber-300/70 rounded-xl overflow-hidden">
+
+                {/* ── Surah Header ── */}
+                <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-800 text-white px-6 py-6 text-center relative">
+                  {/* Corner ornaments */}
+                  <span className="absolute top-2 left-3 text-amber-300 text-lg opacity-60 select-none">✦</span>
+                  <span className="absolute top-2 right-3 text-amber-300 text-lg opacity-60 select-none">✦</span>
+
+                  <p className="text-amber-300 text-xs tracking-[0.25em] uppercase font-semibold mb-1 opacity-90">
+                    Surah {surah.id}
+                  </p>
+                  <h1
+                    className="text-3xl md:text-4xl font-bold mb-2"
+                    style={{ fontFamily: "'Amiri', serif" }}
+                  >
+                    {surah.name_arabic}
+                  </h1>
+                  <p className="text-amber-100 font-semibold text-lg">{surah.name_simple}</p>
+                  <p className="text-emerald-200 text-xs mt-1">
+                    {surah.translated_name?.name} •{' '}
+                    {surah.revelation_place.charAt(0).toUpperCase() + surah.revelation_place.slice(1)}{' '}
+                    • {surah.verses_count} Ayahs
+                  </p>
+
+                  {/* Decorative divider */}
+                  <div className="mt-4 flex items-center justify-center gap-3">
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-400/50" />
+                    <span className="text-amber-300 text-base select-none">❋</span>
+                    <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-400/50" />
+                  </div>
+                </div>
+
+                {/* ── Translation Toggle ── */}
+                <div className="bg-amber-50/80 border-b border-amber-200/60 px-6 py-3 flex items-center justify-between">
+                  <span className="text-xs text-amber-700 font-medium tracking-wide uppercase">
+                    {surah.name_simple} — Full Chapter
+                  </span>
+                  <button
+                    onClick={() => setShowTranslation((v) => !v)}
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-semibold transition-all duration-200 ${
+                      showTranslation
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                        : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'
+                    }`}
+                  >
+                    {showTranslation ? (
+                      <EyeOff className="w-3.5 h-3.5" />
+                    ) : (
+                      <Eye className="w-3.5 h-3.5" />
+                    )}
+                    {showTranslation ? 'Hide Meaning' : 'Show Meaning'}
+                  </button>
+                </div>
+
+                {/* ── Bismillah (for all surahs except 9) ── */}
+                {surah.id !== 9 && (
+                  <div className="text-center py-6 px-6 border-b border-amber-200/50 bg-gradient-to-b from-[#fefcf3] to-amber-50/30">
+                    <p
+                      className="text-3xl md:text-4xl text-emerald-900 leading-relaxed"
+                      style={{ fontFamily: "'Amiri', serif", direction: 'rtl' }}
+                    >
+                      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                    </p>
+                    {showTranslation && (
+                      <motion.p
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-3 text-sm text-teal-700 font-medium italic"
+                      >
+                        In the name of Allah, the Entirely Merciful, the Especially Merciful.
+                      </motion.p>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Main Quran Page — flowing Arabic text ── */}
+                <div className="px-6 md:px-10 py-8 bg-gradient-to-b from-[#fefcf3] to-amber-50/20">
+                  {/*
+                    Display as one flowing block (like a real Quran page),
+                    with verse number glyphs embedded in the text.
+                  */}
+                  <p
+                    className="text-2xl md:text-3xl lg:text-[1.75rem] leading-[3.2rem] text-gray-900 text-right"
+                    style={{
+                      fontFamily: "'Amiri', serif",
+                      direction: 'rtl',
+                      wordSpacing: '0.1em',
+                      lineHeight: '3.4rem',
+                    }}
+                  >
+                    {fullArabicText}
+                  </p>
+
+                  {/* Ameen for Al-Fatiha */}
+                  {id === '1' && (
+                    <motion.div
+                      className="text-center pt-8 mt-6 border-t border-amber-200"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      <p
+                        className="text-4xl text-emerald-700"
+                        style={{ fontFamily: "'Amiri', serif" }}
+                      >
+                        آمين
+                      </p>
+                      <p className="text-gray-500 text-sm mt-1 italic">Ameen</p>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* ── Verse-by-Verse Translations ── */}
+                <AnimatePresence>
+                  {showTranslation && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.35, ease: 'easeInOut' }}
+                      className="overflow-hidden border-t border-amber-200/60 bg-teal-50/40"
+                    >
+                      <div className="px-6 md:px-10 py-6">
+                        <p className="text-xs font-semibold text-teal-700 uppercase tracking-widest mb-5 text-center">
+                          ✦ English Translation ✦
+                        </p>
+                        <div className="space-y-4">
+                          {arabicVerses.map((verse, index) => {
+                            const verseNum = verse.verse_key?.split(':')[1] || index + 1;
+                            return (
+                              <motion.div
+                                key={verse.id || index}
+                                className="flex gap-3 items-start"
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.04, duration: 0.25 }}
+                              >
+                                {/* Verse number badge */}
+                                <span className="flex-shrink-0 mt-0.5 w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center border border-emerald-200">
+                                  {verseNum}
+                                </span>
+                                <p className="text-gray-700 text-sm leading-relaxed">
+                                  {translationVerses[index]?.text}
+                                </p>
+                              </motion.div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* ── Bottom ornament ── */}
+                <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-800 py-3 flex items-center justify-center gap-3">
+                  <span className="text-amber-300 text-sm select-none opacity-70">❋</span>
+                  <span className="text-amber-200 text-xs tracking-widest opacity-60 font-medium">
+                    {surah.name_simple}
+                  </span>
+                  <span className="text-amber-300 text-sm select-none opacity-70">❋</span>
+                </div>
+
+              </div>{/* inner ornamental border */}
+            </div>{/* parchment bg */}
+          </div>{/* golden border */}
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default Surah;
