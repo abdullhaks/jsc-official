@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import {
@@ -58,7 +58,25 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { message } = AntApp.useApp();
-  const [collapsed, setCollapsed] = useState(false);
+
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
+  const [collapsed, setCollapsed] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setCollapsed(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const performLogout = async () => {
     try {
@@ -82,6 +100,12 @@ const AdminLayout = () => {
     });
   };
 
+  const handleNavClick = () => {
+    if (isMobile) {
+      setCollapsed(true);
+    }
+  };
+
   const userMenuItems = [
     {
       key: 'profile',
@@ -98,17 +122,23 @@ const AdminLayout = () => {
     },
   ];
 
-  const selectedKey = navItems
-    .slice()
-    .reverse()
-    .find((item) => location.pathname === item.key || location.pathname.startsWith(item.key + '/'))?.key || '/admin';
+  const selectedKey =
+    navItems
+      .slice()
+      .reverse()
+      .find((item) => location.pathname === item.key || location.pathname.startsWith(item.key + '/'))?.key ||
+    '/admin';
 
   const currentBreadcrumb = breadcrumbNameMap[location.pathname] || 'Admin';
 
   const menuItems = navItems.map((item) => ({
     key: item.key,
     icon: item.icon,
-    label: <Link to={item.key}>{item.label}</Link>,
+    label: (
+      <Link to={item.key} onClick={handleNavClick}>
+        {item.label}
+      </Link>
+    ),
   }));
 
   return (
@@ -120,7 +150,7 @@ const AdminLayout = () => {
         onCollapse={setCollapsed}
         trigger={null}
         width={240}
-        collapsedWidth={72}
+        collapsedWidth={isMobile ? 0 : 72}
         style={{
           background: '#ffffff',
           borderRight: '1px solid #e2e8f0',
@@ -129,7 +159,7 @@ const AdminLayout = () => {
           left: 0,
           top: 0,
           zIndex: 100,
-          boxShadow: '2px 0 12px rgba(0,0,0,0.03)',
+          boxShadow: '2px 0 12px rgba(0,0,0,0.05)',
           transition: 'all 0.25s cubic-bezier(0.2, 0, 0, 1)',
           overflow: 'hidden',
         }}
@@ -195,7 +225,7 @@ const AdminLayout = () => {
           theme="light"
         />
 
-        {/* Collapse Toggle Button */}
+        {/* Bottom Collapse Toggle Button */}
         <div
           style={{
             padding: '16px',
@@ -227,7 +257,7 @@ const AdminLayout = () => {
       {/* ── Main Content Area ─────────────────────────────────────────────── */}
       <Layout
         style={{
-          marginLeft: collapsed ? 72 : 240,
+          marginLeft: isMobile ? (collapsed ? 0 : 240) : collapsed ? 72 : 240,
           transition: 'margin-left 0.25s cubic-bezier(0.2, 0, 0, 1)',
           background: '#f8fafc',
           minHeight: '100vh',
@@ -240,7 +270,7 @@ const AdminLayout = () => {
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             borderBottom: '1px solid #e2e8f0',
-            padding: '0 28px',
+            padding: isMobile ? '0 16px' : '0 28px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -251,16 +281,35 @@ const AdminLayout = () => {
             boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
           }}
         >
-          {/* Breadcrumb */}
-          <Breadcrumb
-            items={[
-              { title: <span style={{ color: '#4f7c3f', fontWeight: 500 }}>JSC</span> },
-              { title: <span style={{ color: '#0f172a', fontWeight: 600 }}>{currentBreadcrumb}</span> },
-            ]}
-          />
+          {/* Header left controls: Toggle & Breadcrumb */}
+          <Space align="center" size={12}>
+            <Tooltip title={collapsed ? 'Expand menu' : 'Collapse menu'}>
+              <div
+                onClick={() => setCollapsed(!collapsed)}
+                style={{
+                  cursor: 'pointer',
+                  color: '#4f7c3f',
+                  fontSize: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '6px',
+                  borderRadius: 6,
+                  background: '#f0fdf4',
+                }}
+              >
+                {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              </div>
+            </Tooltip>
+            <Breadcrumb
+              items={[
+                { title: <span style={{ color: '#4f7c3f', fontWeight: 500 }}>JSC</span> },
+                { title: <span style={{ color: '#0f172a', fontWeight: 600 }}>{currentBreadcrumb}</span> },
+              ]}
+            />
+          </Space>
 
           {/* Right controls */}
-          <Space size={18}>
+          <Space size={isMobile ? 10 : 18}>
             <Tooltip title="Notifications">
               <Badge count={0} showZero={false}>
                 <BellOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />
@@ -297,7 +346,7 @@ const AdminLayout = () => {
                 >
                   {admin?.username?.[0]?.toUpperCase() || 'A'}
                 </Avatar>
-                {!collapsed && (
+                {!isMobile && !collapsed && (
                   <Text style={{ color: '#1e293b', fontSize: 14, fontWeight: 600 }}>
                     {admin?.username || 'Admin'}
                   </Text>
@@ -310,7 +359,7 @@ const AdminLayout = () => {
         {/* Page Content */}
         <Content
           style={{
-            margin: '24px',
+            margin: isMobile ? '12px' : '24px',
             minHeight: 'calc(100vh - 64px - 48px)',
           }}
         >

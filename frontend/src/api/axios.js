@@ -6,6 +6,18 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+// Attach Bearer token from localStorage for devices (like iOS Safari) that block 3rd-party cookies
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -35,26 +47,49 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
-        }).then(() => {
-          return api(originalRequest);
-        }).catch((err) => {
-          return Promise.reject(err);
-        });
+        })
+          .then((token) => {
+            if (token) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+            }
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        await api.post('/auth/refresh');
+        const refreshToken = localStorage.getItem('refreshToken');
+        const headers = refreshToken ? { Authorization: `Bearer ${refreshToken}` } : {};
+
+        const res = await api.post('/auth/refresh', refreshToken ? { refreshToken } : {}, { headers });
+
+        const newAccessToken = res.data?.accessToken;
+        const newRefreshToken = res.data?.refreshToken;
+
+        if (newAccessToken) {
+          localStorage.setItem('accessToken', newAccessToken);
+        }
+        if (newRefreshToken) {
+          localStorage.setItem('refreshToken', newRefreshToken);
+        }
+
         isRefreshing = false;
-        processQueue(null);
+        processQueue(null, newAccessToken);
+
+        if (newAccessToken) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
         return api(originalRequest);
       } catch (err) {
         isRefreshing = false;
         processQueue(err, null);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         useAuthStore.getState().logout();
         return Promise.reject(err);
       }

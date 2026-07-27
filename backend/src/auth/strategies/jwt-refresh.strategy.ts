@@ -8,8 +8,9 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
   constructor(configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
         (request: any) => {
-          return request?.cookies?.refresh_token;
+          return request?.body?.refreshToken || request?.cookies?.refresh_token;
         },
       ]),
       ignoreExpiration: false,
@@ -19,7 +20,10 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
   }
 
   async validate(req: any, payload: any) {
-    const refreshToken = req.cookies?.refresh_token;
+    const refreshToken =
+      ExtractJwt.fromAuthHeaderAsBearerToken()(req) ||
+      req.body?.refreshToken ||
+      req.cookies?.refresh_token;
     return { ...payload, refreshToken };
   }
 }
