@@ -1,9 +1,10 @@
 import React from 'react';
 import CrudPage from '../components/CrudPage';
-import { Tag, Typography } from 'antd';
-import { FilePdfOutlined, FileImageOutlined, VideoCameraOutlined, DownloadOutlined } from '@ant-design/icons';
+import { Tag, Typography, Space } from 'antd';
+import { FilePdfOutlined, FileImageOutlined, VideoCameraOutlined, AudioOutlined, DownloadOutlined, EyeOutlined } from '@ant-design/icons';
 
 const { Link } = Typography;
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const DownloadsPage = () => {
   return (
@@ -20,6 +21,7 @@ const DownloadsPage = () => {
               pdf: <FilePdfOutlined style={{ color: '#ef4444' }} />,
               image: <FileImageOutlined style={{ color: '#3b82f6' }} />,
               video: <VideoCameraOutlined style={{ color: '#8b5cf6' }} />,
+              audio: <AudioOutlined style={{ color: '#ec4899' }} />,
             };
             return (
               <Tag style={{ borderRadius: 12, fontWeight: 600, textTransform: 'uppercase', fontSize: 11 }}>
@@ -50,9 +52,18 @@ const DownloadsPage = () => {
           label: 'Document',
           render: (item) =>
             item.fileUrl ? (
-              <Link href={item.fileUrl} target="_blank" style={{ color: '#4f7c3f', fontSize: 12, fontWeight: 500 }}>
-                📎 View / Download
-              </Link>
+              <Space size={8}>
+                <Link href={item.fileUrl} target="_blank" style={{ color: '#4f7c3f', fontSize: 12, fontWeight: 500 }}>
+                  <EyeOutlined /> View
+                </Link>
+                <Link
+                  href={`${API_BASE}/downloads/${item._id}/file`}
+                  target="_blank"
+                  style={{ color: '#1d4ed8', fontSize: 12, fontWeight: 500 }}
+                >
+                  <DownloadOutlined /> Download
+                </Link>
+              </Space>
             ) : (
               '—'
             ),
@@ -68,13 +79,14 @@ const DownloadsPage = () => {
             { label: 'PDF Document', value: 'pdf' },
             { label: 'Image', value: 'image' },
             { label: 'Video', value: 'video' },
+            { label: 'Audio', value: 'audio' },
           ],
         },
         { key: 'category', label: 'Category', type: 'text' },
         { key: 'title', label: 'Title', type: 'text', required: true },
         { key: 'description', label: 'Description', type: 'textarea', required: true },
         { key: 'date', label: 'Date', type: 'date' },
-        { key: 'file', label: 'Upload File (PDF / Image / Video)', type: 'file' },
+        { key: 'file', label: 'Upload File (PDF / Image / Video / Audio)', type: 'file' },
       ]}
     />
   );

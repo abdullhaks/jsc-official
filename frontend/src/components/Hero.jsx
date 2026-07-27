@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { ArrowDown, Sparkles, BookOpen, Heart, Star, Calendar, Book, Compass, Clock, Users, Mic, GraduationCap } from 'lucide-react';
@@ -7,44 +7,71 @@ import jsc_logo2 from '../assets/jsc_logo2.png'
 
 const LogoPlaceholder = () => (
   <div className="relative">
+    {/* Style block for GPU-friendly CSS animations */}
+    <style>{`
+      @media (prefers-reduced-motion: no-preference) {
+        .animate-ring {
+          animation: spin-ring-pulse var(--ring-duration) linear infinite;
+        }
+        .animate-logo-shadow {
+          animation: logo-glow 3s ease-in-out infinite;
+        }
+        .animate-logo-glow-bg {
+          animation: logo-glow-bg 5s ease-in-out infinite;
+        }
+        .animate-ray {
+          animation: ray-pulse 6s ease-in-out infinite;
+        }
+        .animate-float-element {
+          animation: element-float 6s ease-in-out infinite;
+        }
+      }
+      @keyframes spin-ring-pulse {
+        0% { transform: rotate(0deg) scale(1); opacity: 0.8; }
+        50% { transform: rotate(180deg) scale(1.05); opacity: 0.4; }
+        100% { transform: rotate(360deg) scale(1); opacity: 0.8; }
+      }
+      @keyframes logo-glow {
+        0%, 100% { box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 0 20px rgba(34, 197, 94, 0.2); }
+        50% { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 40px rgba(34, 197, 94, 0.4); }
+      }
+      @keyframes logo-glow-bg {
+        0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
+        50% { transform: scale(1.2) rotate(180deg); opacity: 0.7; }
+      }
+      @keyframes ray-pulse {
+        0%, 100% { opacity: 0.1; transform: scaleY(0.6) scaleX(0.5); }
+        50% { opacity: 0.4; transform: scaleY(1.4) scaleX(2); }
+      }
+      @keyframes element-float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.4; }
+        50% { transform: translateY(-20px) rotate(15deg); opacity: 0.8; }
+      }
+    `}</style>
+
     {/* Glowing rings around logo */}
-    {[...Array(4)].map((_, i) => (
-      <motion.div
+    {/* {[...Array(4)].map((_, i) => (
+      <div
         key={i}
-        className={`absolute inset-${-i * 4 - 4} border-2 rounded-full`}
+        className={`absolute border-2 rounded-full animate-ring`}
         style={{
-          borderImage: `linear-gradient(${i * 90}deg, rgba(34, 197, 94, ${0.6 - i * 0.1}), rgba(16, 185, 129, ${0.4 - i * 0.1}), rgba(5, 150, 105, ${0.3 - i * 0.05})) 1`
-        }}
-        animate={{
-          rotate: [0, 360],
-          scale: [1, 1.05, 1],
-          opacity: [0.8, 0.4, 0.8],
-        }}
-        transition={{
-          rotate: { duration: 15 + i * 3, repeat: Infinity, ease: "linear" },
-          scale: { duration: 3 + i, repeat: Infinity, ease: "easeInOut" },
-          opacity: { duration: 2 + i * 0.5, repeat: Infinity, ease: "easeInOut" },
+          top: `${-i * 4 - 4}px`,
+          bottom: `${-i * 4 - 4}px`,
+          left: `${-i * 4 - 4}px`,
+          right: `${-i * 4 - 4}px`,
+          borderImage: `linear-gradient(${i * 90}deg, rgba(34, 197, 94, ${0.6 - i * 0.1}), rgba(16, 185, 129, ${0.4 - i * 0.1}), rgba(5, 150, 105, ${0.3 - i * 0.05})) 1`,
+          '--ring-duration': `${15 + i * 3}s`,
         }}
       />
-    ))}
+    ))} */}
     
     {/* Main logo container with enhanced styling */}
     <motion.div 
-      className="relative w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-full bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600 flex items-center justify-center shadow-2xl border-4 border-white/80"
+      className="relative w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-full bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600 flex items-center justify-center border-4 border-white/80 animate-logo-shadow"
       whileHover={{ 
         scale: 1.1, 
-        rotate: 5,
+        rotate: 0,
         boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 40px rgba(34, 197, 94, 0.4)"
-      }}
-      animate={{
-        boxShadow: [
-          "0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 0 20px rgba(34, 197, 94, 0.2)",
-          "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 40px rgba(34, 197, 94, 0.4)",
-          "0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 0 20px rgba(34, 197, 94, 0.2)"
-        ]
-      }}
-      transition={{
-        boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" }
       }}
     >
       <img 
@@ -52,80 +79,70 @@ const LogoPlaceholder = () => (
         alt="JSC Logo"
         className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 drop-shadow-lg" 
       />
-      
-      {/* Decorative stars around logo */}
-      {/* {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-3 h-3 text-amber-300"
-          style={{
-            top: '50%',
-            left: '50%',
-            transformOrigin: '50% 80px',
-            transform: `rotate(${i * 60}deg) translateY(-80px)`,
-          }}
-          animate={{
-            rotate: [0, 360],
-            scale: [1, 1.5, 1],
-            opacity: [0.6, 1, 0.6],
-          }}
-          transition={{
-            rotate: { duration: 8, repeat: Infinity, ease: "linear" },
-            scale: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: i * 0.2 },
-            opacity: { duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.1 },
-          }}
-        >
-          ✦
-        </motion.div>
-      ))} */}
-
-
-
     </motion.div>
-
-    {/* Premium badge */}
-    {/* <motion.div
-      className="absolute -top-2 -right-2 w-12 h-12 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg border-3 border-white"
-      initial={{ scale: 0, rotate: -180 }}
-      animate={{ 
-        scale: 1, 
-        rotate: 0,
-        y: [0, -5, 0],
-      }}
-      transition={{ 
-        scale: { delay: 1, duration: 0.5, type: "spring" },
-        rotate: { delay: 1, duration: 0.5 },
-        y: { duration: 2, repeat: Infinity, ease: "easeInOut" }
-      }}
-    >
-      <Star className="w-6 h-6 text-white" />
-    </motion.div> */}
   </div>
 );
+
+// Enhanced Islamic geometric pattern (moved outside component to prevent type re-creation and unmount-remount cycles)
+const IslamicPattern = React.memo(() => (
+  <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="islamicStars" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+        <g className="text-blue-500">
+          <path d="M50,15 L55,30 L70,25 L65,40 L80,45 L65,50 L70,65 L55,60 L50,75 L45,60 L30,65 L35,50 L20,45 L35,40 L30,25 L45,30 Z" 
+                fill="currentColor" opacity="0.3" />
+          <circle cx="50" cy="50" r="15" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.4" />
+        </g>
+      </pattern>
+      
+      <pattern id="geometricGrid" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke="currentColor" strokeWidth="0.3" className="text-green-400" opacity="0.3">
+          <polygon points="30,5 45,15 45,45 30,55 15,45 15,15" />
+          <circle cx="30" cy="30" r="8" />
+        </g>
+      </pattern>
+      
+      <pattern id="crescentPattern" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+        <g className="text-teal-400" opacity="0.2">
+          <path d="M40,10 Q50,25 40,40 Q30,25 40,10 Z" fill="currentColor" />
+          <circle cx="45" cy="20" r="3" fill="currentColor" />
+        </g>
+      </pattern>
+    </defs>
+    
+    <rect width="100%" height="100%" fill="url(#islamicStars)" />
+    {/* <rect width="100%" height="100%" fill="url(#geometricGrid)" /> */}
+    {/* <rect width="100%" height="100%" fill="url(#crescentPattern)" /> */}
+  </svg>
+));
 
 const Hero = () => {
   const { t } = useTranslation();
   const { scrollY } = useScroll();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
+  const heroRef = useRef(null);
   
   const y = useTransform(scrollY, [0, 1000], [0, -200]);
   const opacity = useTransform(scrollY, [0, 1800], [1, 0]);
 
   useEffect(() => {
+    const container = heroRef.current;
+    if (!container) return;
+
     const handleMouseMove = (e) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-      });
+      const rect = container.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      container.style.setProperty('--mouse-x', `${x}%`);
+      container.style.setProperty('--mouse-y', `${y}%`);
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    container.addEventListener('mousemove', handleMouseMove);
+    return () => container.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Enhanced dot particles
-  const particles = Array.from({ length: 25 }, (_, i) => ({
+  // Enhanced dot particles - memoized so they do not shift coordinates on component update
+  const particles = useMemo(() => Array.from({ length: 25 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     y: Math.random() * 100,
@@ -133,21 +150,20 @@ const Hero = () => {
     opacity: Math.random() * 0.4 + 0.2,
     duration: Math.random() * 4 + 3,
     color: ['emerald', 'green', 'teal', 'blue'][Math.floor(Math.random() * 4)]
-  }));
+  })), []);
 
-  // Floating Islamic elements
-  const floatingElements = [
+  // Floating Islamic elements - static coordinates
+  const floatingElements = useMemo(() => [
     { symbol: '✦', color: 'text-green-400', size: 'text-xl', x: 85, y: 25 },
     { symbol: '◈', color: 'text-teal-400', size: 'text-lg', x: 10, y: 70 },
     { symbol: '⬟', color: 'text-amber-400', size: 'text-2xl', x: 90, y: 65 },
     { symbol: '✧', color: 'text-emerald-300', size: 'text-sm', x: 25, y: 85 },
     { symbol: '◊', color: 'text-green-300', size: 'text-lg', x: 75, y: 15 },
     { symbol: '✦', color: 'text-amber-300', size: 'text-lg', x: 95, y: 40 },
-  ];
-
+  ], []);
 
   // Islamic app data with more vibrant colors
-  const islamicApps = [
+  const islamicApps = useMemo(() => [
    { icon: Book, label: 'Quran', color: 'from-emerald-500 via-green-500 to-teal-500', onClick: () => navigate('/quran') },
     // { icon: Clock, label: 'Prayer', color: 'from-blue-500 via-indigo-500 to-purple-500' },
     // { icon: Compass, label: 'Qibla', color: 'from-purple-500 via-pink-500 to-rose-500' },
@@ -156,44 +172,12 @@ const Hero = () => {
     // { icon: Heart, label: 'Dua', color: 'from-rose-500 via-pink-500 to-purple-500' },
     // { icon: Star, label: 'Islamic', color: 'from-green-500 via-emerald-500 to-teal-500' },
     // { icon: BookOpen, label: 'Hadith', color: 'from-indigo-500 via-blue-500 to-cyan-500' },
-  ];
-
-  // Enhanced Islamic geometric pattern
-  const IslamicPattern = () => (
-    <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="islamicStars" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-          <g className="text-blue-500">
-            <path d="M50,15 L55,30 L70,25 L65,40 L80,45 L65,50 L70,65 L55,60 L50,75 L45,60 L30,65 L35,50 L20,45 L35,40 L30,25 L45,30 Z" 
-                  fill="currentColor" opacity="0.3" />
-            <circle cx="50" cy="50" r="15" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.4" />
-          </g>
-        </pattern>
-        
-        <pattern id="geometricGrid" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-          <g fill="none" stroke="currentColor" strokeWidth="0.3" className="text-green-400" opacity="0.3">
-            <polygon points="30,5 45,15 45,45 30,55 15,45 15,15" />
-            <circle cx="30" cy="30" r="8" />
-          </g>
-        </pattern>
-        
-        <pattern id="crescentPattern" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-          <g className="text-teal-400" opacity="0.2">
-            <path d="M40,10 Q50,25 40,40 Q30,25 40,10 Z" fill="currentColor" />
-            <circle cx="45" cy="20" r="3" fill="currentColor" />
-          </g>
-        </pattern>
-      </defs>
-      
-      <rect width="100%" height="100%" fill="url(#islamicStars)" />
-      <rect width="100%" height="100%" fill="url(#geometricGrid)" />
-      <rect width="100%" height="100%" fill="url(#crescentPattern)" />
-    </svg>
-  );
+  ], [navigate]);
 
   return (
     <motion.section
       id="hero"
+      ref={heroRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50"
       style={{ y, opacity }}
     >
@@ -203,24 +187,16 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/30 via-white to-green-100/30" />
         <div className="absolute inset-0 bg-gradient-to-tl from-teal-100/20 via-transparent to-amber-100/20" />
         
-        {/* Animated Islamic patterns */}
-        <motion.div
-          className="absolute inset-0"
-          animate={{ 
-            rotate: [0, 360],
-          }}
-          transition={{ 
-            rotate: { duration: 200, repeat: Infinity, ease: 'linear' }
-          }}
-        >
+        {/* Animated Islamic patterns - transitioned from motion.div to CSS animate class */}
+        <div className="absolute inset-0 animate-[]">
           <IslamicPattern />
-        </motion.div>
+        </div>
 
-        {/* Interactive mouse gradient */}
-        <motion.div
-          className="absolute inset-0 opacity-30"
+        {/* Interactive mouse gradient - transitioned from React state to CSS variable */}
+        <div
+          className="absolute inset-0 opacity-30 pointer-events-none"
           style={{
-            background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(34, 197, 94, 0.15) 0%, rgba(16, 185, 129, 0.1) 30%, rgba(5, 150, 105, 0.05) 50%, transparent 70%)`,
+            background: `radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(34, 197, 94, 0.15) 0%, rgba(16, 185, 129, 0.1) 30%, rgba(5, 150, 105, 0.05) 50%, transparent 70%)`,
           }}
         />
 
@@ -245,56 +221,46 @@ const Hero = () => {
             transition={{
               duration: particle.duration,
               repeat: Infinity,
-              delay: Math.random() * 3,
+              delay: particle.id * 0.1,
               ease: "easeInOut"
             }}
           />
         ))}
 
-        {/* Floating Islamic elements */}
+        {/* Floating Islamic elements - transitioned from motion.div to CSS animate class */}
         {floatingElements.map((element, index) => (
-          <motion.div
+          <div
             key={index}
-            className={`absolute ${element.color} ${element.size} select-none pointer-events-none hidden md:block`}
-            style={{ left: `${element.x}%`, top: `${element.y}%` }}
-            animate={{
-              y: [-20, -40, -20],
-              rotate: [0, 15, -15, 0],
-              opacity: [0.4, 0.8, 0.4],
-            }}
-            transition={{
-              duration: 4 + index * 0.5,
-              repeat: Infinity,
-              delay: index * 0.3,
-              ease: "easeInOut"
+            className={`absolute ${element.color} ${element.size} select-none pointer-events-none hidden md:block animate-float-element`}
+            style={{
+              left: `${element.x}%`,
+              top: `${element.y}%`,
+              animationDelay: `${index * 0.3}s`,
+              animationDuration: `${4 + index * 0.5}s`,
             }}
           >
             {element.symbol}
-          </motion.div>
+          </div>
         ))}
 
-        {/* Enhanced light rays */}
-        <div className="absolute inset-0 flex items-center justify-center">
+        {/* Enhanced light rays - transitioned from motion.div to rotated container + CSS animate scale */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           {[...Array(8)].map((_, i) => (
-            <motion.div
+            <div
               key={i}
-              className="absolute w-0.5 bg-gradient-to-t from-transparent via-emerald-300/30 to-transparent origin-center"
+              className="absolute origin-center"
               style={{
                 height: '60%',
                 transform: `rotate(${(i * 45)}deg)`,
               }}
-              animate={{
-                opacity: [0.1, 0.4, 0.1],
-                scaleY: [0.6, 1.4, 0.6],
-                scaleX: [0.5, 2, 0.5],
-              }}
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                delay: i * 0.3,
-                ease: "easeInOut"
-              }}
-            />
+            >
+              <div
+                className="w-0.5 h-full bg-gradient-to-t from-transparent via-emerald-300/30 to-transparent animate-ray"
+                style={{
+                  animationDelay: `${i * 0.3}s`,
+                }}
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -310,25 +276,15 @@ const Hero = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 1.2, ease: "easeOut", type: "spring" }}
           >
-            <motion.div
-              className="absolute -inset-12 bg-gradient-to-r from-emerald-900/20  via-blue-900/20 to-emerald-700/30 rounded-full blur-3xl"
-              animate={{
-                scale: [1, 1.2, 1],
-                rotate: [0, 180, 360],
-                opacity: [0.4, 0.7, 0.4],
-              }}
-              transition={{
-                scale: { duration: 5, repeat: Infinity, ease: "easeInOut" },
-                rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-                opacity: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-              }}
+            <div
+              className="absolute -inset-12 bg-gradient-to-r from-emerald-900/20 via-blue-900/20 to-emerald-700/30 rounded-full blur-3xl animate-logo-glow-bg"
             />
             <LogoPlaceholder />
           </motion.div>
 
           {/* Enhanced Main title */}
           <motion.div 
-            className="space-y-4 sm:space-y-6"
+            className="space-y-4 sm:space-y-8"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -345,11 +301,11 @@ const Hero = () => {
               transition={{ duration: 4, repeat: Infinity }}
             >
               <span className="block bg-gradient-to-r from-emerald-700 via-green-600  to-emerald-700 bg-clip-text text-transparent">
-                Jeelani Studies
+                Jeelani Studies Centre
               </span>
-              <span className="block bg-gradient-to-r from-green-700 via-emerald-600  to-green-700 bg-clip-text text-transparent">
+              {/* <span className="block bg-gradient-to-r from-green-700 via-emerald-600  to-green-700 bg-clip-text text-transparent">
                 Centre
-              </span>
+              </span> */}
             </motion.h1>
 
             {/* Enhanced Subtitle badges */}
@@ -630,4 +586,4 @@ const Hero = () => {
   );
 };
 
-export default Hero;
+export default React.memo(Hero);

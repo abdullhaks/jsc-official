@@ -5,7 +5,7 @@ export type DownloadDocument = Download & Document;
 
 @Schema({ timestamps: true })
 export class Download {
-  @Prop({ required: true, enum: ['pdf', 'image', 'video'] })
+  @Prop({ required: true, enum: ['pdf', 'image', 'video', 'audio'] })
   fileType: string;
 
   @Prop()
@@ -28,6 +28,9 @@ export class Download {
 
   @Prop()
   filePublicId: string;
+
+  @Prop({ default: 'raw' })
+  resourceType: string;
 }
 
 export const DownloadSchema = SchemaFactory.createForClass(Download);

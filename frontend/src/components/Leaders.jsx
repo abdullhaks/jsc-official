@@ -1,10 +1,17 @@
-import React, { useRef, useState } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Crown, Star, Award, Users, BookOpen, Heart, Quote, ChevronRight, Sparkles } from 'lucide-react';
 import leader1 from '../assets/leader1.jpg';
 import leader2 from '../assets/shaikuna.JPG'
 import leader3 from '../assets/Hamza_usthad.jpg'
 
+const hoverParticles = [
+  { left: '20%', top: '30%', x: -40, y: 50, delay: 0.0 },
+  { left: '80%', top: '10%', x: 30, y: -30, delay: 0.2 },
+  { left: '50%', top: '80%', x: -20, y: -60, delay: 0.4 },
+  { left: '10%', top: '70%', x: 50, y: 40, delay: 0.6 },
+  { left: '90%', top: '90%', x: -50, y: -20, delay: 0.8 },
+];
 
 const leaders = [
   
@@ -42,50 +49,73 @@ const leaders = [
 ];
 
 const Leaders = () => {
-  const containerRef = useRef(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
+
+  // Memoize random values of orbs so they don't shift coordinates on component update
+  const orbs = useMemo(() => [...Array(6)].map((_, i) => ({
+    width: `${Math.random() * 300 + 100}px`,
+    height: `${Math.random() * 300 + 100}px`,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    x: Math.random() * 100 - 50,
+    y: Math.random() * 100 - 50,
+    duration: Math.random() * 10 + 10,
+  })), []);
 
   return (
     <section id="leaders" className="py-20 lg:py-32 relative overflow-hidden">
       {/* Multi-layered Background */}
       <div className="absolute inset-0">
+        <style>{`
+          @media (prefers-reduced-motion: no-preference) {
+            .animate-pattern-slide {
+              animation: pattern-slide-drift 30s linear infinite;
+            }
+            .animate-orb-drift {
+              animation: orb-drift var(--orb-duration, 15s) ease-in-out infinite alternate;
+            }
+            .animate-hover-particle {
+              animation: hover-particle-drift 2s linear infinite;
+            }
+          }
+          @keyframes pattern-slide-drift {
+            from { background-position: 0px 0px; }
+            to { background-position: 80px 80px; }
+          }
+          @keyframes orb-drift {
+            0% { transform: translate(0px, 0px) scale(1); opacity: 0.1; }
+            50% { opacity: 0.3; }
+            100% { transform: translate(var(--orb-x), var(--orb-y)) scale(1.2); opacity: 0.1; }
+          }
+          @keyframes hover-particle-drift {
+            0% { transform: scale(0) translate(0px, 0px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(0) translate(var(--part-x), var(--part-y)); opacity: 0; }
+          }
+        `}</style>
         <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/50" />
         
-        {/* Animated Geometric Pattern */}
-        <motion.div
-          className="absolute inset-0 opacity-5"
+        {/* Animated Geometric Pattern - converted to CSS background position animation */}
+        <div
+          className="absolute inset-0 opacity-5 animate-pattern-slide"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23059669' fill-opacity='1'%3E%3Cpath d='M40 0L50 30H30L40 0Z M40 80L50 50H30L40 80Z M0 40L30 50V30L0 40Z M80 40L50 50V30L80 40Z' /%3E%3Ccircle cx='40' cy='40' r='15' fill='none' stroke='%23059669' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E")`,
           }}
-          animate={{ 
-            backgroundPosition: ['0px 0px', '80px 80px'],
-          }}
-          transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
         />
 
-        {/* Floating Orbs */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
+        {/* Floating Orbs - converted to CSS animation */}
+        {orbs.map((orb, i) => (
+          <div
             key={i}
-            className="absolute rounded-full bg-gradient-to-r from-emerald-200/20 to-teal-200/20 blur-xl"
+            className="absolute rounded-full bg-gradient-to-r from-emerald-200/20 to-teal-200/20 blur-xl animate-orb-drift"
             style={{
-              width: `${Math.random() * 300 + 100}px`,
-              height: `${Math.random() * 300 + 100}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              x: [0, Math.random() * 100 - 50],
-              y: [0, Math.random() * 100 - 50],
-              scale: [1, 1.2, 1],
-              opacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: Math.random() * 10 + 10,
-              repeat: Infinity,
-              ease: "easeInOut"
+              width: orb.width,
+              height: orb.height,
+              left: orb.left,
+              top: orb.top,
+              '--orb-x': `${orb.x}px`,
+              '--orb-y': `${orb.y}px`,
+              '--orb-duration': `${orb.duration}s`,
             }}
           />
         ))}
@@ -291,28 +321,19 @@ const Leaders = () => {
                 <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-teal-200/20 to-transparent rounded-tr-full" />
               </motion.div>
 
-              {/* Floating Particles around each card */}
+              {/* Floating Particles around each card - converted from motion.div with randoms to CSS keyframes and static offsets */}
               {hoveredIndex === index && (
                 <>
-                  {[...Array(5)].map((_, i) => (
-                    <motion.div
+                  {hoverParticles.map((part, i) => (
+                    <div
                       key={i}
-                      className="absolute w-2 h-2 bg-emerald-400 rounded-full"
+                      className="absolute w-2 h-2 bg-emerald-400 rounded-full animate-hover-particle"
                       style={{
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 100}%`,
-                      }}
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ 
-                        scale: [0, 1, 0],
-                        opacity: [0, 1, 0],
-                        x: [0, (Math.random() - 0.5) * 100],
-                        y: [0, (Math.random() - 0.5) * 100],
-                      }}
-                      transition={{ 
-                        duration: 2,
-                        repeat: Infinity,
-                        delay: i * 0.2 
+                        left: part.left,
+                        top: part.top,
+                        '--part-x': `${part.x}px`,
+                        '--part-y': `${part.y}px`,
+                        animationDelay: `${part.delay}s`,
                       }}
                     />
                   ))}
@@ -346,4 +367,4 @@ const Leaders = () => {
   );
 };
 
-export default Leaders;
+export default React.memo(Leaders);

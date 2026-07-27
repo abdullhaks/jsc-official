@@ -1,14 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Play, ExternalLink, Youtube, Instagram, Eye, Heart, Share2, Clock, Sparkles, ArrowRight } from 'lucide-react';
 import { api } from '../api/axios';
+
+const hoverSparkles = [
+  { left: '30%', top: '20%', x: -30, y: 30, delay: 0.0 },
+  { left: '70%', top: '40%', x: 20, y: -20, delay: 0.2 },
+  { left: '40%', top: '80%', x: -10, y: -40, delay: 0.4 },
+  { left: '80%', top: '70%', x: 30, y: 20, delay: 0.6 },
+];
 
 const RecentUploads = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [uploads, setUploads] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
 
   useEffect(() => {
     const fetchLatestContent = async () => {
@@ -56,57 +61,87 @@ const RecentUploads = () => {
     return colors[category] || 'from-gray-500 to-gray-600';
   };
 
+  // Memoize random values of icons so they don't shift coordinates on component update
+  const floatingIcons = useMemo(() => [...Array(6)].map((_, i) => ({
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    x: Math.random() * 30 - 15,
+    duration: Math.random() * 8 + 10,
+    type: i % 3
+  })), []);
+
   return (
     <section id="recentUploads" className="py-20 lg:py-32 relative overflow-hidden">
+      <style>{`
+          @media (prefers-reduced-motion: no-preference) {
+            .animate-tech-pattern {
+              animation: tech-pattern-drift 25s linear infinite, tech-pattern-fade 4s ease-in-out infinite alternate;
+            }
+            .animate-icon-drift {
+              animation: icon-drift var(--icon-duration, 12s) ease-in-out infinite;
+            }
+            .animate-hover-sparkle {
+              animation: hover-sparkle-drift 1.5s linear infinite;
+            }
+            .animate-gradient-text {
+              animation: gradient-shift 5s ease infinite;
+            }
+          }
+          @keyframes tech-pattern-drift {
+            from { background-position: 0px 0px; }
+            to { background-position: 60px 60px; }
+          }
+          @keyframes tech-pattern-fade {
+            0%, 100% { opacity: 0.03; }
+            50% { opacity: 0.08; }
+          }
+          @keyframes icon-drift {
+            0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0.1; }
+            50% { opacity: 0.4; }
+            100% { transform: translateY(-40px) translateX(var(--icon-x)) rotate(360deg); opacity: 0.1; }
+          }
+          @keyframes hover-sparkle-drift {
+            0% { transform: scale(0) translate(0px, 0px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(0) translate(var(--part-x), var(--part-y)); opacity: 0; }
+          }
+          @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+          }
+        `}</style>
       {/* Multi-layered Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-cyan-50/50" />
         
-        {/* Animated Tech Pattern */}
-        <motion.div
-          className="absolute inset-0 opacity-5"
+        {/* Animated Tech Pattern - converted to CSS animation */}
+        <div
+          className="absolute inset-0 opacity-5 animate-tech-pattern"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%232563eb' fill-opacity='1'%3E%3Ccircle cx='30' cy='30' r='8' fill='none' stroke='%232563eb' stroke-width='2'/%3E%3Cpath d='M30 10L40 20L30 30L20 20Z M30 50L40 40L30 30L20 40Z' /%3E%3Cpath d='M10 30L20 40L30 30L20 20Z M50 30L40 40L30 30L40 20Z' /%3E%3C/g%3E%3C/svg%3E")`,
           }}
-          animate={{ 
-            backgroundPosition: ['0px 0px', '60px 60px'],
-            opacity: [0.03, 0.08, 0.03],
-          }}
-          transition={{ 
-            backgroundPosition: { duration: 25, repeat: Infinity, ease: 'linear' },
-            opacity: { duration: 4, repeat: Infinity, ease: 'easeInOut' }
-          }}
         />
 
-        {/* Floating Media Icons */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
+        {/* Floating Media Icons - converted to CSS animation */}
+        {floatingIcons.map((icon, i) => (
+          <div
             key={i}
-            className="absolute"
+            className="absolute animate-icon-drift"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -40, 0],
-              x: [0, Math.random() * 30 - 15, 0],
-              rotate: [0, 360],
-              opacity: [0.1, 0.4, 0.1],
-            }}
-            transition={{
-              duration: Math.random() * 8 + 10,
-              repeat: Infinity,
-              ease: "easeInOut"
+              left: icon.left,
+              top: icon.top,
+              '--icon-x': `${icon.x}px`,
+              '--icon-duration': `${icon.duration}s`,
             }}
           >
-            {i % 3 === 0 ? (
+            {icon.type === 0 ? (
               <Play className="w-6 h-6 text-blue-400" />
-            ) : i % 3 === 1 ? (
+            ) : icon.type === 1 ? (
               <Youtube className="w-6 h-6 text-red-400" />
             ) : (
               <Instagram className="w-6 h-6 text-pink-400" />
             )}
-          </motion.div>
+          </div>
         ))}
       </div>
 
@@ -134,19 +169,13 @@ const RecentUploads = () => {
             viewport={{ once: true }}
             transition={{ duration: 1, delay: 0.2 }}
           >
-            <motion.span 
-                          className="bg-gradient-to-r from-yellow-500 via-fuchsia-700 to-purple-800 bg-clip-text text-transparent"
-                          animate={{ 
-                            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                          }}
-                          transition={{ duration: 5, repeat: Infinity }}
-                          style={{ backgroundSize: '200% 200%' }}
-                        >
+            <span 
+              className="bg-gradient-to-r from-yellow-500 via-fuchsia-700 to-purple-800 bg-clip-text text-transparent animate-gradient-text"
+              style={{ backgroundSize: '200% 200%' }}
+            >
             Stay connected with our latest teachings, discussions, and spiritual content 
             shared across our social media platforms and video channels.
-
-
-              </motion.span>
+            </span>
           </motion.h2>
         </motion.div>
 
@@ -301,28 +330,19 @@ const RecentUploads = () => {
                 <div className="absolute bottom-0 left-0 w-12 h-12 bg-gradient-to-tr from-cyan-200/20 to-transparent rounded-tr-full" />
               </motion.a>
 
-              {/* Floating Sparkles on Hover */}
+              {/* Floating Sparkles on Hover - converted to CSS keyframe animation */}
               {hoveredIndex === index && (
                 <>
-                  {[...Array(4)].map((_, i) => (
-                    <motion.div
+                  {hoverSparkles.map((part, i) => (
+                    <div
                       key={i}
-                      className="absolute w-1 h-1 bg-blue-400 rounded-full"
+                      className="absolute w-1 h-1 bg-blue-400 rounded-full animate-hover-sparkle"
                       style={{
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 100}%`,
-                      }}
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ 
-                        scale: [0, 1, 0],
-                        opacity: [0, 1, 0],
-                        x: [0, (Math.random() - 0.5) * 60],
-                        y: [0, (Math.random() - 0.5) * 60],
-                      }}
-                      transition={{ 
-                        duration: 1.5,
-                        repeat: Infinity,
-                        delay: i * 0.2 
+                        left: part.left,
+                        top: part.top,
+                        '--part-x': `${part.x}px`,
+                        '--part-y': `${part.y}px`,
+                        animationDelay: `${part.delay}s`,
                       }}
                     />
                   ))}
@@ -367,4 +387,4 @@ const RecentUploads = () => {
   );
 };
 
-export default RecentUploads;
+export default React.memo(RecentUploads);

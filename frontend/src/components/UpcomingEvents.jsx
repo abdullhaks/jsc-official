@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, ExternalLink, Sparkles, Users, Star, ArrowRight, Share2 } from 'lucide-react';
 import { api } from '../api/axios';
 import dhikr from '../assets/dhikr.jpg';
@@ -8,12 +8,6 @@ const jeelaniLocation = "https://maps.app.goo.gl/VY6p12Zt2vt8C8W69";
 const sjiaLocation = "https://maps.app.goo.gl/tRXGDLnN5P8Ac8z46";
 
 const UpcomingEvents = () => {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"]
-  });
-  const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
   const [events, setEvents] = useState([]);
   const [timeLeft, setTimeLeft] = useState({});
   const [loading, setLoading] = useState(true);
@@ -110,7 +104,26 @@ const UpcomingEvents = () => {
   };
 
   return (
-    <section id="upcomingEvents" className="py-16 sm:py-20 lg:py-32 relative overflow-hidden" ref={containerRef}>
+    <section id="upcomingEvents" className="py-16 sm:py-20 lg:py-32 relative overflow-hidden">
+      {/* Self-contained CSS animations to replace Framer Motion loop tick overhead */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .animate-star-float {
+            animation: star-float var(--star-duration) ease-in-out infinite;
+          }
+          .animate-gradient-text {
+            animation: gradient-shift 5s ease infinite;
+          }
+        }
+        @keyframes star-float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+          50% { transform: translateY(-10px) rotate(180deg); opacity: 1; }
+        }
+        @keyframes gradient-shift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+      `}</style>
       {/* Soft Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-purple-50/30 to-pink-50/50" />
@@ -151,16 +164,12 @@ const UpcomingEvents = () => {
               Upcoming
             </span>
             <br />
-            <motion.span 
-              className="bg-gradient-to-r from-purple-600 via-indigo-700 to-purple-800 bg-clip-text text-transparent"
-              animate={{ 
-                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-              }}
-              transition={{ duration: 5, repeat: Infinity }}
+            <span 
+              className="bg-gradient-to-r from-purple-600 via-indigo-700 to-purple-800 bg-clip-text text-transparent animate-gradient-text"
               style={{ backgroundSize: '200% 200%' }}
             >
               Events & Programs
-            </motion.span>
+            </span>
           </motion.h2>
 
           {/* ── Recurring Programme Notice Cards ── */}
@@ -503,28 +512,20 @@ const UpcomingEvents = () => {
                 <div className="absolute -bottom-2 -left-2 w-4 sm:w-6 h-4 sm:h-6 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-70" />
               </motion.div>
 
-              {/* Floating Stars */}
+              {/* Floating Stars - converted from motion.div to standard div + CSS animation */}
               {[...Array(3)].map((_, i) => (
-                <motion.div
+                <div
                   key={i}
-                  className="absolute"
+                  className="absolute animate-star-float"
                   style={{
                     left: `${20 + i * 30}%`,
                     top: `${10 + i * 20}%`,
-                  }}
-                  animate={{
-                    y: [0, -10, 0],
-                    rotate: [0, 360],
-                    opacity: [0.3, 1, 0.3],
-                  }}
-                  transition={{
-                    duration: 3 + i,
-                    repeat: Infinity,
-                    delay: i * 0.5,
+                    '--star-duration': `${3 + i}s`,
+                    animationDelay: `${i * 0.5}s`,
                   }}
                 >
                   <Star className="w-3 sm:w-4 h-3 sm:h-4 text-indigo-400 fill-current" />
-                </motion.div>
+                </div>
               ))}
             </motion.div>
           ))}
@@ -554,4 +555,4 @@ const UpcomingEvents = () => {
   );
 };
 
-export default UpcomingEvents;
+export default React.memo(UpcomingEvents);

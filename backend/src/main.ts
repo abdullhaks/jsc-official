@@ -6,9 +6,11 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { getConnectionToken } from '@nestjs/mongoose';
-import { Connection } from 'mongoose';
+import { Connection, ConnectionStates } from 'mongoose';
+import dns from 'dns';
 
 async function bootstrap() {
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
@@ -19,6 +21,7 @@ async function bootstrap() {
     console.log('✅  [Database] MongoDB connected successfully.');
   });
   mongoConnection.on('error', (err) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     console.error('❌  [Database] MongoDB connection error:', err.message);
   });
   mongoConnection.on('disconnected', () => {
@@ -26,7 +29,7 @@ async function bootstrap() {
   });
 
   // Log current state if already connected before event fires
-  if (mongoConnection.readyState === 1) {
+  if (mongoConnection.readyState === ConnectionStates.connected) {
     console.log('✅  [Database] MongoDB already connected.');
   }
   // ──────────────────────────────────────────────────────────────────────────
@@ -60,4 +63,3 @@ async function bootstrap() {
   console.log(`📡  [API]    Prefix: /${apiPrefix}`);
 }
 bootstrap();
-

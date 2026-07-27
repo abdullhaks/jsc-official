@@ -84,36 +84,49 @@ const Publications = () => {
 
   return (
     <section id="publications" className="py-32 relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/40">
+      {/* Self-contained CSS animations for background drift */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .animate-pub-blob-1 {
+            animation: pub-blob-drift-1 20s linear infinite;
+          }
+          .animate-pub-blob-2 {
+            animation: pub-blob-drift-2 25s linear infinite;
+          }
+          .animate-pub-pattern {
+            animation: pub-pattern-drift 30s linear infinite;
+          }
+        }
+        @keyframes pub-blob-drift-1 {
+          0%, 100% { transform: translate(0px, 0px) scale(1); }
+          50% { transform: translate(100px, -50px) scale(1.1); }
+        }
+        @keyframes pub-blob-drift-2 {
+          0%, 100% { transform: translate(0px, 0px) scale(1); }
+          50% { transform: translate(-80px, 80px) scale(0.9); }
+        }
+        @keyframes pub-pattern-drift {
+          from { background-position: 0px 0px; }
+          to { background-position: 60px 60px; }
+        }
+      `}</style>
+
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute -top-20 -right-20 w-96 h-96 bg-gradient-to-br from-emerald-200/20 to-blue-200/20 rounded-full blur-3xl"
-          animate={{
-            x: [0, 100, 0],
-            y: [0, -50, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        <div
+          className="absolute -top-20 -right-20 w-96 h-96 bg-gradient-to-br from-emerald-200/20 to-blue-200/20 rounded-full blur-3xl animate-pub-blob-1"
         />
-        <motion.div
-          className="absolute -bottom-20 -left-20 w-80 h-80 bg-gradient-to-br from-blue-200/20 to-purple-200/20 rounded-full blur-3xl"
-          animate={{
-            x: [0, -80, 0],
-            y: [0, 80, 0],
-            scale: [1, 0.9, 1]
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+        <div
+          className="absolute -bottom-20 -left-20 w-80 h-80 bg-gradient-to-br from-blue-200/20 to-purple-200/20 rounded-full blur-3xl animate-pub-blob-2"
         />
       </div>
 
       {/* Floating geometric shapes */}
-      <motion.div
-        className="absolute inset-0 opacity-10"
+      <div
+        className="absolute inset-0 opacity-10 animate-pub-pattern"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 10L45 25L30 40L15 25Z' fill='%23059669' opacity='0.3'/%3E%3C/svg%3E")`,
         }}
-        animate={{ backgroundPosition: ['0px 0px', '60px 60px'] }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
       />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
@@ -379,4 +392,4 @@ const Publications = () => {
   );
 };
 
-export default Publications;
+export default React.memo(Publications);

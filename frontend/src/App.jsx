@@ -15,6 +15,7 @@ import Footer from './components/Footer';
 import Articles from './components/Articles';
 import ArticleDetail from './components/ArticleDetail';
 import EventDetail from './components/EventDetail';
+import MemoryDetail from './components/MemoryDetail';
 import { Routes, Route } from 'react-router-dom';
 import QuranSurahs from './components/QuranSurahs';
 import Surah from './components/Surah';
@@ -60,18 +61,32 @@ const AppContent = () => {
   // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    const handleScroll = () => {
-      const sections = ['hero', 'leaders', 'upcomingEvents', 'recentUploads', 'publicEvents', 'publications', 'downloads', 'articles', 'contact'];
-      const scrollPosition = window.scrollY + 200;
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element && element.offsetTop <= scrollPosition && element.offsetTop + element.offsetHeight > scrollPosition) {
-          setActiveSection(section);
-        }
-      }
+    const sections = ['hero', 'leaders', 'upcomingEvents', 'recentUploads', 'publicEvents', 'publications', 'downloads', 'articles', 'contact'];
+    
+    const observerOptions = {
+      root: null,
+      rootMargin: '-30% 0px -50% 0px',
+      threshold: 0,
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    const observerCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        observer.observe(el);
+      }
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -114,6 +129,7 @@ const AppContent = () => {
         <Route path="/article/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><ArticleDetail /><Footer /></>} />
         <Route path="/events/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><EventDetail /><Footer /></>} />
         <Route path="/event/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><EventDetail /><Footer /></>} />
+        <Route path="/memories/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><MemoryDetail /><Footer /></>} />
         <Route path="/quran" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><QuranSurahs /><Footer /></>} />
         <Route path="/surah/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><Surah /><Footer /></>} />
 

@@ -22,6 +22,12 @@ export class MemoriesService {
     return this.model.find().sort({ createdAt: -1 }).exec();
   }
 
+  async findById(id: string) {
+    const item = await this.model.findById(id);
+    if (!item) throw new NotFoundException('Not found');
+    return item;
+  }
+
   async create(createDto: CreateMemoryDto, file?: Express.Multer.File) {
     let imageUrl = '';
     let imagePublicId = '';

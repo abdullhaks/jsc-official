@@ -2,7 +2,7 @@ import { IsString, IsNotEmpty, IsOptional, IsEnum, IsNumber } from 'class-valida
 import { Type } from 'class-transformer';
 
 export class CreateDownloadDto {
-  @IsEnum(['pdf', 'image', 'video'])
+  @IsEnum(['pdf', 'image', 'video', 'audio'])
   @IsNotEmpty()
   fileType: string;
 

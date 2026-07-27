@@ -167,27 +167,38 @@ const Contact = () => {
 
   return (
     <section id="contact" className="py-32 relative overflow-hidden bg-gradient-to-br from-slate-50 via-emerald-50/30 to-blue-50/40">
+      {/* Self-contained CSS animations for background drift */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .animate-contact-blob {
+            animation: contact-blob-drift 25s linear infinite;
+          }
+          .animate-contact-pattern {
+            animation: contact-pattern-drift 35s linear infinite;
+          }
+        }
+        @keyframes contact-blob-drift {
+          0%, 100% { transform: translate(0px, 0px) scale(1); }
+          50% { transform: translate(-60px, 60px) scale(0.8); }
+        }
+        @keyframes contact-pattern-drift {
+          from { background-position: 0px 0px; }
+          to { background-position: 60px 60px; }
+        }
+      `}</style>
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-emerald-200/30 to-blue-200/30 rounded-full blur-3xl"
-          animate={{
-            x: [0, -60, 0],
-            y: [0, 60, 0],
-            scale: [1, 0.8, 1]
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+        <div
+          className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-emerald-200/30 to-blue-200/30 rounded-full blur-3xl animate-contact-blob"
         />
       </div>
 
       {/* Floating geometric shapes */}
-      <motion.div
-        className="absolute inset-0 opacity-8"
+      <div
+        className="absolute inset-0 opacity-8 animate-contact-pattern"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L50 30L30 60L10 30Z' fill='%23059669' opacity='0.1'/%3E%3C/svg%3E")`,
         }}
-        animate={{ backgroundPosition: ['0px 0px', '60px 60px'] }}
-        transition={{ duration: 35, repeat: Infinity, ease: 'linear' }}
       />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
@@ -525,4 +536,4 @@ const Contact = () => {
   );
 };
 
-export default Contact;
+export default React.memo(Contact);

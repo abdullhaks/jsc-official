@@ -18,6 +18,12 @@ export class MemoriesController {
     return PaginationHelper.buildPaginatedResponse(items, total, dto.page || 1, limit);
   }
 
+  @Public()
+  @Get('memories/:id')
+  async findOne(@Param('id') id: string) {
+    return this.service.findById(id);
+  }
+
   @Get('admin/memories')
   findAllAdmin() {
     return this.service.findAllAdmin();
@@ -38,11 +44,5 @@ export class MemoriesController {
   @Delete('admin/memories/:id')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
-  }
-
-  @Public()
-  @Get('memories/:id/share')
-  async share(@Param('id') id: string) {
-    return { shareUrl: `/memories/${id}`, text: 'Check out this memory!' };
   }
 }

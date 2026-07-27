@@ -1,19 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Camera, Calendar, Users, Heart, Star, MapPin, Clock, ArrowRight, Sparkles } from 'lucide-react';
 import { api } from '../api/axios';
+import { useNavigate } from 'react-router-dom';
 
 const PublicEvents = () => {
-  const [selectedEvent, setSelectedEvent] = useState(null);
   const [publicEvents, setPublicEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"]
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMemories = async () => {
@@ -40,6 +34,7 @@ const PublicEvents = () => {
   }, []);
 
   const formatDate = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
       year: 'numeric', 
@@ -67,59 +62,82 @@ const PublicEvents = () => {
     return heights[index % heights.length];
   };
 
+
+  // Memoize random values of icons so they don't shift coordinates on component update
+  const floatingIcons = useMemo(() => [...Array(10)].map((_, i) => ({
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    x: Math.random() * 40 - 20,
+    duration: Math.random() * 12 + 8,
+    type: i % 4
+  })), []);
+
   return (
-    <section id="publicEvents" className="py-20 lg:py-32 relative overflow-hidden" ref={containerRef}>
+    <section id="publicEvents" className="py-20 lg:py-32 relative overflow-hidden">
       {/* Multi-layered Background */}
       <div className="absolute inset-0">
+        <style>{`
+          @media (prefers-reduced-motion: no-preference) {
+            .animate-memory-pattern {
+              animation: memory-pattern-drift 50s linear infinite, memory-pattern-rotate 100s linear infinite;
+            }
+            .animate-icon-drift-memory {
+              animation: icon-drift-memory var(--icon-duration, 10s) ease-in-out infinite;
+            }
+            .animate-gradient-text-amber {
+              animation: gradient-shift-amber 5s ease infinite;
+            }
+          }
+          @keyframes memory-pattern-drift {
+            from { background-position: 0px 0px; }
+            to { background-position: 80px 80px; }
+          }
+          @keyframes memory-pattern-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          @keyframes icon-drift-memory {
+            0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0.1; }
+            50% { opacity: 0.4; }
+            100% { transform: translateY(-50px) translateX(var(--icon-x)) rotate(360deg); opacity: 0.1; }
+          }
+          @keyframes gradient-shift-amber {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+          }
+        `}</style>
         <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50/30 to-rose-50/50" />
         
-        {/* Animated Memory Pattern */}
-        <motion.div
-          className="absolute inset-0 opacity-5"
+        {/* Animated Memory Pattern - converted to CSS animation */}
+        <div
+          className="absolute inset-0 opacity-5 animate-memory-pattern"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f59e0b' fill-opacity='1'%3E%3Cpath d='M40 0L50 30L80 40L50 50L40 80L30 50L0 40L30 30Z' /%3E%3Ccircle cx='40' cy='40' r='15' fill='none' stroke='%23f59e0b' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E")`,
           }}
-          animate={{ 
-            backgroundPosition: ['0px 0px', '80px 80px'],
-            rotate: [0, 360],
-          }}
-          transition={{ 
-            backgroundPosition: { duration: 50, repeat: Infinity, ease: 'linear' },
-            rotate: { duration: 100, repeat: Infinity, ease: 'linear' }
-          }}
         />
 
-        {/* Floating Memory Icons */}
-        {[...Array(10)].map((_, i) => (
-          <motion.div
+        {/* Floating Memory Icons - converted to CSS animation */}
+        {floatingIcons.map((icon, i) => (
+          <div
             key={i}
-            className="absolute"
+            className="absolute animate-icon-drift-memory"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -50, 0],
-              x: [0, Math.random() * 40 - 20, 0],
-              rotate: [0, 360],
-              opacity: [0.1, 0.4, 0.1],
-            }}
-            transition={{
-              duration: Math.random() * 12 + 8,
-              repeat: Infinity,
-              ease: "easeInOut"
+              left: icon.left,
+              top: icon.top,
+              '--icon-x': `${icon.x}px`,
+              '--icon-duration': `${icon.duration}s`,
             }}
           >
-            {i % 4 === 0 ? (
+            {icon.type === 0 ? (
               <Camera className="w-6 h-6 text-amber-400" />
-            ) : i % 4 === 1 ? (
+            ) : icon.type === 1 ? (
               <Heart className="w-5 h-5 text-rose-400" />
-            ) : i % 4 === 2 ? (
+            ) : icon.type === 2 ? (
               <Star className="w-5 h-5 text-orange-400" />
             ) : (
               <Users className="w-6 h-6 text-yellow-400" />
             )}
-          </motion.div>
+          </div>
         ))}
       </div>
 
@@ -151,16 +169,12 @@ const PublicEvents = () => {
               Community
             </span>
             <br />
-            <motion.span 
-              className="bg-gradient-to-r from-orange-600 via-amber-700 to-orange-800 bg-clip-text text-transparent"
-              animate={{ 
-                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-              }}
-              transition={{ duration: 5, repeat: Infinity }}
+            <span 
+              className="bg-gradient-to-r from-orange-600 via-amber-700 to-orange-800 bg-clip-text text-transparent animate-gradient-text-amber"
               style={{ backgroundSize: '200% 200%' }}
             >
               Memories & Events
-            </motion.span>
+            </span>
           </motion.h2>
 
           <motion.p
@@ -195,7 +209,7 @@ const PublicEvents = () => {
                 rotate: Math.random() * 4 - 2,
                 zIndex: 10
               }}
-              onClick={() => setSelectedEvent(event)}
+              onClick={() => navigate(`/memories/${event.id}`)}
             >
               {/* Memory Card */}
               <div className="relative bg-white rounded-2xl lg:rounded-3xl overflow-hidden shadow-xl border-4 border-white group-hover:shadow-2xl transition-all duration-500">
@@ -405,115 +419,8 @@ const PublicEvents = () => {
           </motion.button>
         </motion.div>
       </div>
-
-      {/* Event Detail Modal */}
-      {selectedEvent && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setSelectedEvent(null)}
-        >
-          <motion.div
-            className="relative max-w-xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] border border-gray-100"
-            initial={{ scale: 0.9, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 20 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedEvent(null)}
-              className="absolute top-4 right-4 z-10 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center shadow-md hover:bg-black/70 transition-colors font-bold"
-            >
-              ×
-            </button>
-
-            {/* Content Scroll Area */}
-            <div className="overflow-y-auto w-full">
-              {/* Image */}
-              <div className="relative h-56 md:h-64 overflow-hidden">
-                <img
-                  src={selectedEvent.eventImage}
-                  alt={selectedEvent.publicEventName}
-                  className="w-full h-full object-cover object-center"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                
-                {/* Event Location Badge */}
-                <div className="absolute bottom-4 left-4 bg-amber-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                  {selectedEvent.location || 'Community Gathering'}
-                </div>
-              </div>
-
-              {/* Body */}
-              <div className="p-6">
-                <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
-                  {selectedEvent.publicEventName}
-                </h3>
-
-                <div className="flex flex-wrap items-center gap-4 mb-4 text-xs text-gray-500 font-medium">
-                  <div className="flex items-center space-x-1">
-                    <Calendar className="w-4 h-4 text-amber-600" />
-                    <span>{formatDate(selectedEvent.date)}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Users className="w-4 h-4 text-orange-600" />
-                    <span>{selectedEvent.attendees} Attendees</span>
-                  </div>
-                </div>
-
-                <p className="text-gray-600 text-sm leading-relaxed mb-6">
-                  {selectedEvent.description}
-                </p>
-
-                {/* Highlights */}
-                {selectedEvent.highlights && selectedEvent.highlights.length > 0 && (
-                  <div className="mb-6 bg-amber-50/50 p-4 rounded-xl border border-amber-100">
-                    <h4 className="font-semibold text-gray-900 text-xs uppercase tracking-wider mb-2">Event Highlights</h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {selectedEvent.highlights.map((highlight, index) => (
-                        <span
-                          key={index}
-                          className="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg text-xs font-semibold"
-                        >
-                          {highlight}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Share Button only */}
-                <button 
-                  onClick={async () => {
-                    if (navigator.share) {
-                      try {
-                        await navigator.share({
-                          title: selectedEvent.publicEventName,
-                          text: selectedEvent.description,
-                          url: window.location.href,
-                        });
-                      } catch (error) {
-                        console.error('Error sharing:', error);
-                      }
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                      alert('Memory link copied to clipboard!');
-                    }
-                  }}
-                  className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold py-3.5 rounded-xl hover:from-amber-700 hover:to-orange-700 transition-all duration-300 text-sm shadow-md"
-                >
-                  Share Memory
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
     </section>
   );
 };
 
-export default PublicEvents;
+export default React.memo(PublicEvents);

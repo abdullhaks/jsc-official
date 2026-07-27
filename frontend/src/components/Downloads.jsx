@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download as DownloadIcon, FileText, Calendar, Eye, ExternalLink, Image as ImageIcon, Video as VideoIcon } from 'lucide-react';
+import { Download as DownloadIcon, FileText, Calendar, Eye, Image as ImageIcon, Video as VideoIcon, Music } from 'lucide-react';
 import { api } from '../api/axios';
 
 const Downloads = () => {
@@ -17,13 +17,13 @@ const Downloads = () => {
   const fetchDownloads = async () => {
     try {
       const res = await api.get('/downloads?limit=100');
-      const items = res.data.items || res.data;
+      const items = res.data.items || res.data || [];
       const mapped = items.map(item => ({
         id: item._id,
         title: item.title,
         description: item.description,
         link: item.fileUrl,
-        category: item.category || 'General',
+        category: item.category?.trim() || 'General',
         type: item.fileType || 'pdf',
         downloadCount: item.downloadCount || 0,
         publishedDate: item.date ? new Date(item.date).toLocaleDateString() : new Date(item.createdAt).toLocaleDateString(),
@@ -31,8 +31,7 @@ const Downloads = () => {
       setDownloads(mapped);
 
       // Compute dynamic categories
-      const rawCategories = mapped.map(item => item.category.trim());
-      const uniqueCats = ['All', ...new Set(rawCategories)];
+      const uniqueCats = ['All', ...new Set(mapped.map(item => item.category))];
       const categoriesList = uniqueCats.map(cat => ({
         label: cat,
         value: cat.toLowerCase()
@@ -44,19 +43,13 @@ const Downloads = () => {
     setLoading(false);
   };
 
-  const handleDownloadClick = async (download) => {
-    try {
-      // Track download count in database
-      await api.post(`/downloads/${download.id}/track`);
-      // Update local download count
-      setDownloads(prev => prev.map(d => d.id === download.id ? { ...d, downloadCount: d.downloadCount + 1 } : d));
-    } catch (err) {
-      console.error('Failed to track download', err);
-    }
-    // Open file in new tab so browser displays / prompts save for Cloudinary file
-    if (download.link) {
-      window.open(download.link, '_blank', 'noopener,noreferrer');
-    }
+  const handleDownloadClick = (download) => {
+    // Update local download count
+    setDownloads(prev => prev.map(d => d.id === download.id ? { ...d, downloadCount: d.downloadCount + 1 } : d));
+
+    // Open backend redirect endpoint in new tab so it tracks download & forces download using fl_attachment
+    const downloadUrl = `${api.defaults.baseURL}/downloads/${download.id}/file`;
+    window.open(downloadUrl, '_blank', 'noopener,noreferrer');
   };
 
   const filteredDownloads = downloads.filter(item => {
@@ -95,6 +88,8 @@ const Downloads = () => {
         return <ImageIcon className="w-6 h-6 text-white" />;
       case 'video':
         return <VideoIcon className="w-6 h-6 text-white" />;
+      case 'audio':
+        return <Music className="w-6 h-6 text-white" />;
       default:
         return <FileText className="w-6 h-6 text-white" />;
     }
@@ -105,15 +100,22 @@ const Downloads = () => {
       id="downloads"
       className="py-24 relative overflow-hidden bg-gradient-to-br from-emerald-50 via-blue-50/30 to-teal-50/40"
     >
+      {/* Self-contained CSS animations for background drift */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .animate-dl-blob {
+            animation: dl-blob-drift 25s linear infinite;
+          }
+        }
+        @keyframes dl-blob-drift {
+          0%, 100% { transform: translate(0px, 0px); }
+          50% { transform: translate(120px, -60px); }
+        }
+      `}</style>
       {/* Background Decor */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-br from-emerald-300/20 to-teal-300/20 rounded-full blur-3xl"
-          animate={{
-            x: [0, 120, 0],
-            y: [0, -60, 0],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+        <div
+          className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-br from-emerald-300/20 to-teal-300/20 rounded-full blur-3xl animate-dl-blob"
         />
       </div>
 
@@ -162,8 +164,7 @@ const Downloads = () => {
           className="grid md:grid-cols-2 xl:grid-cols-3 gap-8"
           variants={containerVariants}
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
+          animate={downloads.length > 0 ? 'visible' : 'hidden'}
         >
           <AnimatePresence>
             {filteredDownloads.map((download) => (
@@ -218,8 +219,7 @@ const Downloads = () => {
                       className="w-full inline-flex items-center justify-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg group mt-auto gap-2"
                     >
                       <DownloadIcon className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />
-                      <span>Open / Download</span>
-                      <ExternalLink className="w-3.5 h-3.5 opacity-70 ml-1" />
+                      <span>Download</span>
                     </button>
                   </div>
                 </div>
@@ -238,4 +238,4 @@ const Downloads = () => {
   );
 };
 
-export default Downloads;
+export default React.memo(Downloads);

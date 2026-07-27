@@ -17,10 +17,10 @@ export class CloudinaryService {
     });
   }
 
-  async destroyAsset(publicId: string): Promise<any> {
+  async destroyAsset(publicId: string, resourceType: string = 'image'): Promise<any> {
     if (!publicId) return;
     return new Promise((resolve, reject) => {
-      cloudinary.uploader.destroy(publicId, (error, result) => {
+      cloudinary.uploader.destroy(publicId, { resource_type: resourceType as any }, (error, result) => {
         if (error) return reject(error);
         resolve(result);
       });
