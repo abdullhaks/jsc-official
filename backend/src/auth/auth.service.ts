@@ -49,16 +49,34 @@ export class AuthService {
 
   getCookieOptions(isRefresh: boolean = false) {
     const isProd = this.configService.get('NODE_ENV') === 'production';
-    const domain = this.configService.get('COOKIE_DOMAIN') || 'localhost';
-    const sameSite = this.configService.get('COOKIE_SAMESITE') as 'lax' | 'none' | 'strict' || 'lax';
-    const secure = this.configService.get('COOKIE_SECURE') === 'true' || isProd;
-    
-    return {
+    const rawDomain = this.configService.get<string>('COOKIE_DOMAIN');
+
+    let domain: string | undefined = undefined;
+    if (rawDomain) {
+      const cleaned = rawDomain
+        .replace(/^https?:\/\//i, '')
+        .split('/')[0]
+        .split(':')[0]
+        .trim();
+      if (cleaned && cleaned !== 'localhost') {
+        domain = cleaned;
+      }
+    }
+
+    const sameSite = (this.configService.get<string>('COOKIE_SAMESITE') as 'lax' | 'none' | 'strict') || 'lax';
+    const secure = this.configService.get<string>('COOKIE_SECURE') === 'true' || isProd;
+
+    const options: Record<string, any> = {
       httpOnly: true,
       secure,
-      domain,
       sameSite,
       path: isRefresh ? '/api/auth/refresh' : '/',
     };
+
+    if (domain) {
+      options.domain = domain;
+    }
+
+    return options;
   }
 }
