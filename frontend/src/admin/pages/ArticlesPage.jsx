@@ -41,12 +41,17 @@ const ArticlesPage = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [files, setFiles] = useState({ coverImage: null, inlineImage1: null, inlineImage2: null });
+  
+  // Preview modal state
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewItem, setPreviewItem] = useState(null);
+
   const { message } = AntApp.useApp();
   const [form] = Form.useForm();
 
   useEffect(() => {
     fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = async () => {
@@ -84,6 +89,16 @@ const ArticlesPage = () => {
     setEditingItem(null);
     form.resetFields();
     setFiles({ coverImage: null, inlineImage1: null, inlineImage2: null });
+  };
+
+  const handleOpenPreview = (item) => {
+    setPreviewItem(item);
+    setIsPreviewModalOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewModalOpen(false);
+    setPreviewItem(null);
   };
 
   const handleSubmit = async () => {
@@ -154,14 +169,84 @@ const ArticlesPage = () => {
     if (!editingItem) return null;
     if (key === 'coverImage' && editingItem.coverImageUrl) return editingItem.coverImageUrl;
     if (key === 'inlineImage1') {
-      const img = editingItem.inlineImages?.find(i => i.position === 1);
+      const img = editingItem.inlineImages?.find((i) => i.position === 1);
       return img?.url || null;
     }
     if (key === 'inlineImage2') {
-      const img = editingItem.inlineImages?.find(i => i.position === 2);
+      const img = editingItem.inlineImages?.find((i) => i.position === 2);
       return img?.url || null;
     }
     return null;
+  };
+
+  const renderPreviewContent = (item) => {
+    if (!item?.content) return null;
+    const rawContent = item.content;
+    const inlineImages = (item.inlineImages || []).sort((a, b) => (a.position || 0) - (b.position || 0));
+
+    let blocks = [];
+    if (rawContent.includes('</p>')) {
+      blocks = rawContent.split('</p>').map((b) => (b.trim() ? b + '</p>' : '')).filter(Boolean);
+    } else {
+      blocks = rawContent
+        .split(/\n\s*\n/)
+        .map((b) => `<p style="margin-bottom: 16px; line-height: 1.8; font-size: 16px; color: #334155;">${b.replace(/\n/g, '<br/>')}</p>`)
+        .filter(Boolean);
+    }
+
+    if (blocks.length === 0) {
+      return <div style={{ lineHeight: 1.8, fontSize: 16, color: '#334155' }} dangerouslySetInnerHTML={{ __html: rawContent }} />;
+    }
+
+    const numImages = inlineImages.length;
+    if (numImages === 1) {
+      const mid = Math.ceil(blocks.length / 2);
+      const part1 = blocks.slice(0, mid).join('');
+      const part2 = blocks.slice(mid).join('');
+      return (
+        <div>
+          <div dangerouslySetInnerHTML={{ __html: part1 }} />
+          {inlineImages[0]?.url && (
+            <div style={{ margin: '24px 0', borderRadius: 16, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+              <img src={inlineImages[0].url} alt="Inline illustration" style={{ width: '100%', maxHeight: 420, objectFit: 'cover', display: 'block' }} />
+            </div>
+          )}
+          <div dangerouslySetInnerHTML={{ __html: part2 }} />
+        </div>
+      );
+    }
+
+    if (numImages >= 2) {
+      const third = Math.ceil(blocks.length / 3);
+      const part1 = blocks.slice(0, third).join('');
+      const part2 = blocks.slice(third, third * 2).join('');
+      const part3 = blocks.slice(third * 2).join('');
+      return (
+        <div>
+          <div dangerouslySetInnerHTML={{ __html: part1 }} />
+          {inlineImages[0]?.url && (
+            <div style={{ margin: '24px 0', borderRadius: 16, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+              <img src={inlineImages[0].url} alt="Inline illustration 1" style={{ width: '100%', maxHeight: 420, objectFit: 'cover', display: 'block' }} />
+            </div>
+          )}
+          <div dangerouslySetInnerHTML={{ __html: part2 }} />
+          {inlineImages[1]?.url && (
+            <div style={{ margin: '24px 0', borderRadius: 16, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+              <img src={inlineImages[1].url} alt="Inline illustration 2" style={{ width: '100%', maxHeight: 420, objectFit: 'cover', display: 'block' }} />
+            </div>
+          )}
+          <div dangerouslySetInnerHTML={{ __html: part3 }} />
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        {blocks.map((block, idx) => (
+          <div key={idx} dangerouslySetInnerHTML={{ __html: block }} />
+        ))}
+      </div>
+    );
   };
 
   const tableColumns = [
@@ -189,6 +274,20 @@ const ArticlesPage = () => {
           />
           <Text style={{ color: '#475569', fontSize: 13 }}>
             {record.author?.name || '—'}
+          </Text>
+        </Space>
+      ),
+    },
+    {
+      title: 'Views',
+      dataIndex: 'views',
+      key: 'views',
+      width: 100,
+      render: (val) => (
+        <Space size={6} style={{ background: '#f8fafc', padding: '4px 10px', borderRadius: 20, border: '1px solid #e2e8f0' }}>
+          <EyeOutlined style={{ color: '#4f7c3f', fontSize: 13 }} />
+          <Text style={{ color: '#334155', fontWeight: 600, fontSize: 13 }}>
+            {val || 0}
           </Text>
         </Space>
       ),
@@ -226,9 +325,18 @@ const ArticlesPage = () => {
       title: 'Actions',
       key: 'actions',
       align: 'right',
-      width: 110,
+      width: 130,
       render: (_, record) => (
         <Space size={8}>
+          <Tooltip title="Preview">
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={() => handleOpenPreview(record)}
+              style={{ color: '#0369a1' }}
+              size="small"
+            />
+          </Tooltip>
           <Tooltip title="Edit">
             <Button
               type="text"
@@ -304,7 +412,7 @@ const ArticlesPage = () => {
         />
       </div>
 
-      {/* Modal */}
+      {/* CRUD Modal */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -424,6 +532,89 @@ const ArticlesPage = () => {
             })}
           </Row>
         </Form>
+      </Modal>
+
+      {/* Preview Modal */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 8, background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <EyeOutlined style={{ color: '#0369a1', fontSize: 18 }} />
+            </div>
+            <span style={{ color: '#0f172a', fontWeight: 700, fontSize: 17 }}>
+              Article Preview
+            </span>
+          </div>
+        }
+        open={isPreviewModalOpen}
+        onCancel={handleClosePreview}
+        footer={[
+          <Button key="close" type="primary" onClick={handleClosePreview} style={{ background: '#0f172a', border: 'none', borderRadius: 8, fontWeight: 600 }}>
+            Close Preview
+          </Button>
+        ]}
+        width={780}
+        styles={{
+          content: { background: '#ffffff', borderRadius: 16, padding: 0, border: '1px solid #e2e8f0', overflow: 'hidden' },
+          header: { background: '#ffffff', borderBottom: '1px solid #f1f5f9', padding: '20px 24px 16px' },
+          body: { padding: '24px', background: '#ffffff', maxHeight: '75vh', overflowY: 'auto' },
+          footer: { background: '#f8fafc', borderTop: '1px solid #f1f5f9', padding: '16px 24px' },
+          mask: { backdropFilter: 'blur(4px)', background: 'rgba(0,0,0,0.5)' },
+        }}
+        destroyOnClose
+      >
+        {previewItem && (
+          <div>
+            {/* Cover Banner */}
+            {previewItem.coverImageUrl && (
+              <div style={{ marginBottom: 24, borderRadius: 16, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
+                <img src={previewItem.coverImageUrl} alt={previewItem.title} style={{ width: '100%', maxHeight: 380, objectFit: 'cover', display: 'block' }} />
+              </div>
+            )}
+
+            {/* Title */}
+            <Title level={2} style={{ color: '#0f172a', fontWeight: 800, margin: '0 0 16px', lineHeight: 1.3 }}>
+              {previewItem.title}
+            </Title>
+
+            {/* Author Metadata Bar */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, padding: '12px 16px', background: '#f8fafc', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 24 }}>
+              <Space size={12}>
+                <Avatar size={40} icon={<UserOutlined />} style={{ background: 'linear-gradient(135deg, #4f7c3f, #2d5a1b)' }} />
+                <div>
+                  <Text style={{ display: 'block', color: '#0f172a', fontWeight: 700, fontSize: 14 }}>
+                    {previewItem.author?.name || 'Unknown Author'}
+                  </Text>
+                  {previewItem.author?.bio && (
+                    <Text style={{ color: '#64748b', fontSize: 12 }}>
+                      {previewItem.author.bio}
+                    </Text>
+                  )}
+                </div>
+              </Space>
+              <Space size={16}>
+                <Space size={6} style={{ background: '#ffffff', padding: '4px 10px', borderRadius: 20, border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+                  <EyeOutlined style={{ color: '#4f7c3f', fontSize: 13 }} />
+                  <Text style={{ color: '#334155', fontWeight: 600, fontSize: 13 }}>
+                    {previewItem.views || 0} Views
+                  </Text>
+                </Space>
+                {previewItem.createdAt && (
+                  <Text style={{ color: '#64748b', fontSize: 12 }}>
+                    📅 {new Date(previewItem.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                  </Text>
+                )}
+              </Space>
+            </div>
+
+            <Divider style={{ borderColor: '#f1f5f9', margin: '0 0 24px' }} />
+
+            {/* Formatted Article Body */}
+            <div className="article-preview-body">
+              {renderPreviewContent(previewItem)}
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* Light theme table styles */}

@@ -24,7 +24,7 @@ export class AuthController {
     res.cookie('access_token', accessToken, this.authService.getCookieOptions(false));
     res.cookie('refresh_token', refreshToken, this.authService.getCookieOptions(true));
 
-    return { admin: adminData };
+    return { admin: adminData, accessToken, refreshToken };
   }
 
   @Public()
@@ -37,7 +37,7 @@ export class AuthController {
     res.cookie('access_token', accessToken, this.authService.getCookieOptions(false));
     res.cookie('refresh_token', refreshToken, this.authService.getCookieOptions(true));
 
-    return { message: 'Tokens refreshed' };
+    return { message: 'Tokens refreshed', accessToken, refreshToken, admin };
   }
 
   @Public()
