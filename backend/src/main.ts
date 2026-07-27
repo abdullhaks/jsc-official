@@ -51,9 +51,32 @@ async function bootstrap() {
     }),
   );
 
-  const clientUrl = configService.get<string>('CLIENT_URL');
+  const rawOrigins = configService.get<string>('origins') || '';
+
+  // Parse CORS origins from .env
+  // Format: [localhost:5173,localhost:5174] -> ["http://localhost:5173", "http://localhost:5174"]
+  let parsedOrigins: string[] = [];
+  if (rawOrigins) {
+    const cleaned = rawOrigins.replace(/[[\]]/g, '').trim();
+    if (cleaned) {
+      parsedOrigins = cleaned.split(',').map((origin) => {
+        const trimmed = origin.trim();
+        if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+          return `http://${trimmed}`;
+        }
+        return trimmed;
+      });
+    }
+  }
+
+  // Fallback origins if parsing failed or was empty
+  if (parsedOrigins.length === 0) {
+    parsedOrigins = ['http://localhost:5173', 'http://localhost:5174'];
+  }
+
   app.enableCors({
-    origin: clientUrl || 'http://localhost:5173',
+    origin: parsedOrigins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
 
