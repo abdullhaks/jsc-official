@@ -103,9 +103,10 @@ const Login = () => {
               fontSize: 30,
               margin: '0 auto 16px',
               boxShadow: '0 8px 24px rgba(79,124,63,0.25)',
+              color: '#ffffff',
             }}
           >
-            ☪️
+            JSC
           </div>
           <Title
             level={2}
@@ -119,7 +120,7 @@ const Login = () => {
             JSC Admin Portal
           </Title>
           <Text style={{ color: '#4f7c3f', fontSize: 13, fontWeight: 600, letterSpacing: '0.03em' }}>
-            Jamiyyathul Shubanul Coromandel
+            Jeelani studies centre
           </Text>
         </div>
 

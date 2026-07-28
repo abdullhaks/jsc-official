@@ -188,9 +188,10 @@ const AdminLayout = () => {
               fontSize: 20,
               flexShrink: 0,
               boxShadow: '0 4px 12px rgba(79,124,63,0.25)',
+              color: '#ffffff',
             }}
           >
-            ☪️
+            JSC
           </div>
           {!collapsed && (
             <div style={{ overflow: 'hidden' }}>
@@ -234,7 +235,7 @@ const AdminLayout = () => {
             justifyContent: collapsed ? 'center' : 'flex-end',
           }}
         >
-          <Tooltip title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} placement="right">
+          {/* <Tooltip title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} placement="right"> */}
             <div
               onClick={() => setCollapsed(!collapsed)}
               style={{
@@ -250,7 +251,7 @@ const AdminLayout = () => {
             >
               {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             </div>
-          </Tooltip>
+          {/* </Tooltip> */}
         </div>
       </Sider>
 
@@ -283,7 +284,7 @@ const AdminLayout = () => {
         >
           {/* Header left controls: Toggle & Breadcrumb */}
           <Space align="center" size={12}>
-            <Tooltip title={collapsed ? 'Expand menu' : 'Collapse menu'}>
+            {/* <Tooltip title={collapsed ? 'Expand menu' : 'Collapse menu'}> */}
               <div
                 onClick={() => setCollapsed(!collapsed)}
                 style={{
@@ -299,7 +300,7 @@ const AdminLayout = () => {
               >
                 {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               </div>
-            </Tooltip>
+            {/* </Tooltip> */}
             <Breadcrumb
               items={[
                 { title: <span style={{ color: '#4f7c3f', fontWeight: 500 }}>JSC</span> },

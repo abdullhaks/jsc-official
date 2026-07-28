@@ -159,9 +159,10 @@ const DashboardOverview = () => {
             opacity: 0.08,
             lineHeight: 1,
             userSelect: 'none',
+            color: '#ffffff',
           }}
         >
-          ☪️
+          JSC
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
           <div>

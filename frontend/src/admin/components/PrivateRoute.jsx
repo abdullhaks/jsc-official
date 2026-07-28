@@ -38,9 +38,10 @@ const PrivateRoute = () => {
             fontSize: 28,
             boxShadow: '0 8px 24px rgba(79,124,63,0.4)',
             marginBottom: 8,
+            color: '#ffffff',
           }}
         >
-          ☪️
+          JSC
         </div>
         <Spin
           indicator={<LoadingOutlined style={{ fontSize: 28, color: '#4f7c3f' }} spin />}
