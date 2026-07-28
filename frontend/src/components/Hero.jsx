@@ -310,8 +310,9 @@ const Hero = () => {
 
             {/* Enhanced Subtitle badges */}
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4 lg:space-x-6">
+              <a href="https://sjia-webapp-official.vercel.app/" target="_blank" rel="noopener noreferrer">
               <motion.div
-                className="flex items-center space-x-2 bg-white/90 backdrop-blur-sm border-2 border-emerald-200 rounded-full px-4 sm:px-6 py-2 sm:py-3 shadow-lg"
+                className="flex items-center cursor-pointer space-x-2 bg-white/90 backdrop-blur-sm border-2 border-emerald-200 rounded-full px-4 sm:px-6 py-2 sm:py-3 shadow-lg "
                 whileHover={{ 
                   scale: 1.05, 
                   borderColor: 'rgb(34, 197, 94)',
@@ -325,11 +326,11 @@ const Hero = () => {
                   ]
                 }}
                 transition={{ duration: 3, repeat: Infinity }}
-                onClick={() => navigate('https://sjia-webapp-official.vercel.app/')}
               >
                 <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
-                <span className="font-semibold text-gray-700 text-sm sm:text-base">Islamic Education</span>
+                <span className="font-semibold text-gray-700 text-sm sm:text-base ">Islamic Education</span>
               </motion.div>
+              </a>
               <motion.div
                 className="flex items-center space-x-2 bg-white/90 backdrop-blur-sm border-2 border-green-200 rounded-full px-4 sm:px-6 py-2 sm:py-3 shadow-lg"
                 whileHover={{ 
