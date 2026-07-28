@@ -366,9 +366,9 @@ const RecentUploads = () => {
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.98 }}
           >
-            <Youtube className="w-5 h-5" />
-            <span>Visit YouTube Channel</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <Youtube className="w-5 h-5 text-red-500" />
+            <span className='text-red-500'>Visit YouTube Channel</span>
+            <ArrowRight className="w-4 h-4 text-red-500 group-hover:translate-x-1 transition-transform" />
           </motion.a>
 
           <motion.a
@@ -377,9 +377,9 @@ const RecentUploads = () => {
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.98 }}
           >
-            <Instagram className="w-5 h-5" />
-            <span>Follow on Instagram</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <Instagram className="w-5 h-5 text-white" />
+            <span className="text-white">Follow on Instagram</span>
+            <ArrowRight className="w-4 h-4  text-white group-hover:translate-x-1 transition-transform" />
           </motion.a>
         </motion.div>
       </div>

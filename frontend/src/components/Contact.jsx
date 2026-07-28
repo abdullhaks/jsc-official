@@ -10,19 +10,15 @@ const Contact = () => {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', null
+  const [errorMessage, setErrorMessage] = useState('');
   const [focusedField, setFocusedField] = useState(null);
-  const [selectedInquiryType, setSelectedInquiryType] = useState('general');
-
-  const inquiryTypes = [
-    { id: 'general', label: 'General Inquiry', icon: <MessageCircle className="w-4 h-4" /> },
-    { id: 'education', label: 'Education Programs', icon: <Users className="w-4 h-4" /> },
-    { id: 'spiritual', label: 'Spiritual Guidance', icon: <Heart className="w-4 h-4" /> },
-    { id: 'publications', label: 'Publications', icon: <Globe className="w-4 h-4" /> }
-  ];
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (submitStatus) setSubmitStatus(null); // Clear status when user starts typing
+    if (submitStatus) {
+      setSubmitStatus(null);
+      setErrorMessage('');
+    }
   };
 
   const validateEmail = (email) => {
@@ -35,61 +31,50 @@ const Contact = () => {
     
     if (!formData.name.trim()) {
       message.error('Please enter your name properly');
+      setErrorMessage('Please enter your name properly');
       setSubmitStatus('error');
       return;
     }
     if (!validateEmail(formData.email)) {
-      message.error('Please enter valied email');
+      message.error('Please enter a valid email address');
+      setErrorMessage('Please enter a valid email address');
       setSubmitStatus('error');
       return;
     }
     if (!formData.message.trim()) {
-      message.error('Please send a valied message');
+      message.error('Please send a valid message');
+      setErrorMessage('Please send a valid message');
       setSubmitStatus('error');
       return;
     }
 
     setIsSubmitting(true);
+    setSubmitStatus(null);
+    setErrorMessage('');
     
     try {
-      // Simulate API call
-       const templateParams = {
+      const templateParams = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone || "Not provided",
         subject: formData.subject || "No subject",
-        inquiryType: inquiryTypes.find(t => t.id === selectedInquiryType)?.label || "General",
         message: formData.message,
         date: new Date().toLocaleString()
       };
 
-
-
-        await emailjs.send(
-          import.meta.env.VITE_EMAILJS_SERVICE_ID,
-          import.meta.env.VITE_EMAILJS_TEMPLATE_ID, // first template
-          templateParams,
-          import.meta.env.VITE_EMAILJS_USER_ID
-        );
-
-        // await emailjs.send(
-        //   import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        //   import.meta.env.VITE_EMAILJS_AUTO_REPLY_TEMPLATE_ID, // second template
-        //   templateParams,
-        //   import.meta.env.VITE_EMAILJS_USER_ID
-        // );
-
+      await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        templateParams,
+        import.meta.env.VITE_EMAILJS_USER_ID
+      );
 
       message.success('Enquiry sent successfully!');
-
-      // message.info('Sorry! message service is under maintenance now.please try later. Shukran');
-
-      
-      // setSubmitStatus('success');
+      setSubmitStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '', phone: '' });
-      setSelectedInquiryType('general');
     } catch (error) {
       console.error('Error sending email:', error);
+      setErrorMessage(error?.text || 'Failed to send enquiry. Please try again later.');
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -260,30 +245,6 @@ const Contact = () => {
               </div>
 
               <div className="p-8">
-                {/* Inquiry Type Selection */}
-                <div className="mb-8">
-                  <label className="block text-sm font-semibold text-gray-700 mb-4">Type of Inquiry</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {inquiryTypes.map((type) => (
-                      <motion.button
-                        key={type.id}
-                        type="button"
-                        onClick={() => setSelectedInquiryType(type.id)}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium transition-all duration-300 ${
-                          selectedInquiryType === type.id
-                            ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200'
-                            : 'bg-gray-50 text-gray-600 border-2 border-transparent hover:bg-gray-100'
-                        }`}
-                      >
-                        {type.icon}
-                        {type.label}
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Form Fields */}
                   {formFields.map((field, index) => (
@@ -399,8 +360,8 @@ const Contact = () => {
                         </>
                       ) : (
                         <>
-                          <AlertCircle className="w-5 h-5" />
-                          <span>Please fill in all required fields correctly.</span>
+                          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                          <span>{errorMessage || 'Please fill in all required fields correctly.'}</span>
                         </>
                       )}
                     </motion.div>

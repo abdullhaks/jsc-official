@@ -176,13 +176,13 @@ const EventDetail = () => {
               </div>
 
               {/* Venue Column */}
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 flex-shrink-0">
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 flex-shrink-0 mt-0.5">
                   <MapPin className="w-6 h-6" />
                 </div>
-                <div className="overflow-hidden">
+                <div>
                   <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block">Venue</span>
-                  <span className="text-gray-900 font-bold text-base block truncate">
+                  <span className="text-gray-900 font-bold text-base block whitespace-pre-wrap break-words">
                     {event.venue || 'Jeelani Masjid'}
                   </span>
                 </div>

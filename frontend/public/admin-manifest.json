@@ -1,0 +1,22 @@
+{
+  "name": "JSC Admin Portal",
+  "short_name": "JSC Admin",
+  "description": "Admin Portal for Jeelani Studies Centre",
+  "theme_color": "#065f46",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "icons": [
+    {
+      "src": "https://ik.imagekit.io/aksWebSolutions/JSC/JSC_APP_ICON.png?updatedAt=1754539840889",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://ik.imagekit.io/aksWebSolutions/JSC/JSC_APP_ICON2.png?updatedAt=1754539864015",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

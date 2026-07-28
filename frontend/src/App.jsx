@@ -16,7 +16,7 @@ import Articles from './components/Articles';
 import ArticleDetail from './components/ArticleDetail';
 import EventDetail from './components/EventDetail';
 import MemoryDetail from './components/MemoryDetail';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import QuranSurahs from './components/QuranSurahs';
 import Surah from './components/Surah';
 
@@ -36,6 +36,19 @@ import ArticlesPage from './admin/pages/ArticlesPage';
 const AppContent = () => {
   const { message } = AntApp.useApp();
   const [activeSection, setActiveSection] = useState('hero');
+  const location = useLocation();
+
+  // Dynamic PWA manifest switcher for Admin PWA app
+  useEffect(() => {
+    const manifestLink = document.querySelector("link[rel='manifest']");
+    if (manifestLink) {
+      if (location.pathname.startsWith('/admin')) {
+        manifestLink.setAttribute('href', '/admin-manifest.json');
+      } else {
+        manifestLink.setAttribute('href', '/manifest.json');
+      }
+    }
+  }, [location.pathname]);
 
   // ── Initial Backend Health Check ─────────────────────────────────────────
   useEffect(() => {

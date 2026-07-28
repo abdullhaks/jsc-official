@@ -345,7 +345,7 @@ const Footer = () => {
             © {new Date().getFullYear()} Jeelani Studies Centre. All rights reserved.
           </motion.p>
           <motion.p className="text-xs text-gray-400 mt-2">
-            Website by <a href="https://www.linkedin.com/in/abdullha-kalamban-234746295?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app" className="underline hover:text-emerald-400">AKS-WebSolutions</a>
+            Website by <a href="https://www.linkedin.com/in/abdullhaks" className="underline hover:text-emerald-400">AKS-WebSolutions</a>
           </motion.p>
         </motion.div>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { ArrowDown, Sparkles, BookOpen, Heart, Star, Calendar, Book, Compass, Clock, Users, Mic, GraduationCap } from 'lucide-react';
@@ -122,8 +122,8 @@ const Hero = () => {
   const navigate = useNavigate();
   const heroRef = useRef(null);
   
-  const y = useTransform(scrollY, [0, 1000], [0, -200]);
-  const opacity = useTransform(scrollY, [0, 1800], [1, 0]);
+  
+  const opacity = useTransform(scrollY, [0, 2000], [2, 0]);
 
   useEffect(() => {
     const container = heroRef.current;
@@ -179,7 +179,7 @@ const Hero = () => {
       id="hero"
       ref={heroRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50"
-      style={{ y, opacity }}
+      style={{ opacity }}
     >
       {/* Enhanced Background */}
       <div className="absolute inset-0">
@@ -325,6 +325,7 @@ const Hero = () => {
                   ]
                 }}
                 transition={{ duration: 3, repeat: Infinity }}
+                onClick={() => navigate('https://sjia-webapp-official.vercel.app/')}
               >
                 <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
                 <span className="font-semibold text-gray-700 text-sm sm:text-base">Islamic Education</span>
@@ -549,7 +550,7 @@ const Hero = () => {
       </div>
 
       {/* Enhanced Scroll indicator */}
-      <motion.div
+      {/* <motion.div
         className="absolute bottom-4 sm:bottom left-1/2 transform -translate-x-1/2"
         initial={{ opacity: 0, y: -20 }}
         animate={{ 
@@ -581,7 +582,7 @@ const Hero = () => {
             <ArrowDown className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-600" />
           </motion.div>
         </motion.div>
-      </motion.div>
+      </motion.div> */}
     </motion.section>
   );
 };

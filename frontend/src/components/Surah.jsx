@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, BookOpen, Eye, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
+
+const PAGE_SIZE = 50;
 
 const Surah = () => {
   const { id } = useParams();
@@ -12,10 +14,12 @@ const Surah = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showTranslation, setShowTranslation] = useState(false); // hidden by default
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showAllVerses, setShowAllVerses] = useState(false);
   const navigate = useNavigate();
 
   // Manual Fatiha data with Ameen
-  const fatihaData = {
+  const fatihaData = useMemo(() => ({
     surah: {
       id: 1,
       name_simple: 'Al-Fatihah',
@@ -50,10 +54,15 @@ const Surah = () => {
           'The path of those upon whom You have bestowed favor, not of those who have evoked Your anger or of those who are astray.',
       },
     ],
-  };
+  }), []);
 
   useEffect(() => {
     const fetchSurah = async () => {
+      setLoading(true);
+      setError(null);
+      setCurrentPage(1);
+      setShowAllVerses(false);
+
       try {
         if (id === '1') {
           setSurah(fatihaData.surah);
@@ -68,8 +77,8 @@ const Surah = () => {
           axios.get(`https://api.quran.com/api/v4/quran/translations/131?chapter_number=${id}`),
         ]);
         setSurah(surahInfoRes.data.chapter);
-        setArabicVerses(arabicRes.data.verses);
-        setTranslationVerses(translationRes.data.translations);
+        setArabicVerses(arabicRes.data.verses || []);
+        setTranslationVerses(translationRes.data.translations || []);
         setLoading(false);
       } catch (err) {
         setError('Failed to load Surah. Please try again later.');
@@ -77,7 +86,38 @@ const Surah = () => {
       }
     };
     fetchSurah();
-  }, [id]);
+  }, [id, fatihaData]);
+
+  const totalPages = useMemo(() => {
+    if (!arabicVerses.length) return 1;
+    return Math.ceil(arabicVerses.length / PAGE_SIZE);
+  }, [arabicVerses.length]);
+
+  const displayedVerses = useMemo(() => {
+    if (showAllVerses || arabicVerses.length <= PAGE_SIZE) {
+      return arabicVerses;
+    }
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return arabicVerses.slice(start, start + PAGE_SIZE);
+  }, [arabicVerses, currentPage, showAllVerses]);
+
+  const displayedTranslations = useMemo(() => {
+    if (showAllVerses || translationVerses.length <= PAGE_SIZE) {
+      return translationVerses;
+    }
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return translationVerses.slice(start, start + PAGE_SIZE);
+  }, [translationVerses, currentPage, showAllVerses]);
+
+  /* ── Build full Arabic text as a single flowing page ── */
+  const fullArabicText = useMemo(() => {
+    return displayedVerses
+      .map((v, i) => {
+        const num = v.verse_key?.split(':')[1] || ((currentPage - 1) * PAGE_SIZE + i + 1);
+        return `${v.text_uthmani} ۝${num}`;
+      })
+      .join('  ');
+  }, [displayedVerses, currentPage]);
 
   if (loading) {
     return (
@@ -106,20 +146,11 @@ const Surah = () => {
     );
   }
 
-  /* ── Build full Arabic text as a single flowing page ── */
-  const fullArabicText = arabicVerses
-    .map((v, i) => {
-      const num = v.verse_key?.split(':')[1] || i + 1;
-      // Append Arabic verse number glyph after each verse
-      return `${v.text_uthmani} ۝${num}`;
-    })
-    .join('  ');
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.3 }}
       className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-emerald-50 pb-16"
     >
       {/* ── Background texture ── */}
@@ -134,25 +165,18 @@ const Surah = () => {
       <div className="relative max-w-3xl mx-auto px-4 py-8 pt-24">
 
         {/* ── Back button ── */}
-        <motion.button
-          className="flex items-center gap-2 text-emerald-700 mb-8 hover:text-emerald-900 transition-colors font-medium group"
+        <button
+          className="flex items-center gap-2 text-emerald-700 mb-8 hover:text-emerald-900 transition-colors font-medium group cursor-pointer"
           onClick={() => navigate('/quran')}
-          whileHover={{ x: -4 }}
-          transition={{ duration: 0.15 }}
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Back to Surahs
-        </motion.button>
+        </button>
 
         {/* ══════════════════════════════════════════
             QURAN PAGE — outer parchment border
         ══════════════════════════════════════════ */}
-        <motion.div
-          className="relative rounded-2xl shadow-2xl overflow-hidden"
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6 }}
-        >
+        <div className="relative rounded-2xl shadow-2xl overflow-hidden">
           {/* Outer golden border decoration */}
           <div className="bg-gradient-to-b from-amber-800 via-amber-700 to-amber-800 p-[3px] rounded-2xl">
             <div className="bg-gradient-to-b from-amber-50 via-[#fefcf3] to-amber-50 rounded-[14px] overflow-hidden">
@@ -190,30 +214,71 @@ const Surah = () => {
                   </div>
                 </div>
 
-                {/* ── Translation Toggle ── */}
-                <div className="bg-amber-50/80 border-b border-amber-200/60 px-6 py-3 flex items-center justify-between">
+                {/* ── Translation Toggle & Controls ── */}
+                <div className="bg-amber-50/80 border-b border-amber-200/60 px-6 py-3 flex flex-wrap items-center justify-between gap-3">
                   <span className="text-xs text-amber-700 font-medium tracking-wide uppercase">
-                    {surah.name_simple} — Full Chapter
+                    {surah.name_simple} {totalPages > 1 && !showAllVerses ? `— Ayahs ${(currentPage - 1) * PAGE_SIZE + 1} to ${Math.min(currentPage * PAGE_SIZE, arabicVerses.length)} of ${arabicVerses.length}` : '— Full Chapter'}
                   </span>
-                  <button
-                    onClick={() => setShowTranslation((v) => !v)}
-                    className={`flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-semibold transition-all duration-200 ${
-                      showTranslation
-                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                        : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'
-                    }`}
-                  >
-                    {showTranslation ? (
-                      <EyeOff className="w-3.5 h-3.5" />
-                    ) : (
-                      <Eye className="w-3.5 h-3.5" />
+                  
+                  <div className="flex items-center gap-2">
+                    {totalPages > 1 && (
+                      <button
+                        onClick={() => setShowAllVerses(v => !v)}
+                        className="text-xs px-3 py-1.5 rounded-full border border-amber-300 bg-white text-amber-800 hover:bg-amber-100 font-medium transition-colors"
+                      >
+                        {showAllVerses ? 'Show Paginated' : 'Show All Ayahs'}
+                      </button>
                     )}
-                    {showTranslation ? 'Hide Meaning' : 'Show Meaning'}
-                  </button>
+
+                    <button
+                      onClick={() => setShowTranslation((v) => !v)}
+                      className={`flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-semibold transition-all duration-200 ${
+                        showTranslation
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                          : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'
+                      }`}
+                    >
+                      {showTranslation ? (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Eye className="w-3.5 h-3.5" />
+                      )}
+                      {showTranslation ? 'Hide Meaning' : 'Show Meaning'}
+                    </button>
+                  </div>
                 </div>
 
-                {/* ── Bismillah (for all surahs except 9) ── */}
-                {surah.id !== 9 && (
+                {/* ── Pagination Controls (Top) ── */}
+                {totalPages > 1 && !showAllVerses && (
+                  <div className="bg-amber-100/60 border-b border-amber-200 px-6 py-2 flex items-center justify-between text-xs font-medium text-amber-900">
+                    <button
+                      onClick={() => {
+                        setCurrentPage(p => Math.max(p - 1, 1));
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      disabled={currentPage === 1}
+                      className="flex items-center gap-1 px-3 py-1 bg-white border border-amber-300 rounded hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4" /> Previous
+                    </button>
+
+                    <span>Page {currentPage} of {totalPages}</span>
+
+                    <button
+                      onClick={() => {
+                        setCurrentPage(p => Math.min(p + 1, totalPages));
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      disabled={currentPage === totalPages}
+                      className="flex items-center gap-1 px-3 py-1 bg-white border border-amber-300 rounded hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Next <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* ── Bismillah (for all surahs except 9, show on page 1) ── */}
+                {surah.id !== 9 && (currentPage === 1 || showAllVerses) && (
                   <div className="text-center py-6 px-6 border-b border-amber-200/50 bg-gradient-to-b from-[#fefcf3] to-amber-50/30">
                     <p
                       className="text-3xl md:text-4xl text-emerald-900 leading-relaxed"
@@ -222,24 +287,15 @@ const Surah = () => {
                       بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                     </p>
                     {showTranslation && (
-                      <motion.p
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="mt-3 text-sm text-teal-700 font-medium italic"
-                      >
+                      <p className="mt-3 text-sm text-teal-700 font-medium italic">
                         In the name of Allah, the Entirely Merciful, the Especially Merciful.
-                      </motion.p>
+                      </p>
                     )}
                   </div>
                 )}
 
                 {/* ── Main Quran Page — flowing Arabic text ── */}
                 <div className="px-6 md:px-10 py-8 bg-gradient-to-b from-[#fefcf3] to-amber-50/20">
-                  {/*
-                    Display as one flowing block (like a real Quran page),
-                    with verse number glyphs embedded in the text.
-                  */}
                   <p
                     className="text-2xl md:text-3xl lg:text-[1.75rem] leading-[3.2rem] text-gray-900 text-right"
                     style={{
@@ -254,12 +310,7 @@ const Surah = () => {
 
                   {/* Ameen for Al-Fatiha */}
                   {id === '1' && (
-                    <motion.div
-                      className="text-center pt-8 mt-6 border-t border-amber-200"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                    >
+                    <div className="text-center pt-8 mt-6 border-t border-amber-200">
                       <p
                         className="text-4xl text-emerald-700"
                         style={{ fontFamily: "'Amiri', serif" }}
@@ -267,7 +318,7 @@ const Surah = () => {
                         آمين
                       </p>
                       <p className="text-gray-500 text-sm mt-1 italic">Ameen</p>
-                    </motion.div>
+                    </div>
                   )}
                 </div>
 
@@ -278,7 +329,7 @@ const Surah = () => {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.35, ease: 'easeInOut' }}
+                      transition={{ duration: 0.25 }}
                       className="overflow-hidden border-t border-amber-200/60 bg-teal-50/40"
                     >
                       <div className="px-6 md:px-10 py-6">
@@ -286,24 +337,20 @@ const Surah = () => {
                           ✦ English Translation ✦
                         </p>
                         <div className="space-y-4">
-                          {arabicVerses.map((verse, index) => {
-                            const verseNum = verse.verse_key?.split(':')[1] || index + 1;
+                          {displayedVerses.map((verse, index) => {
+                            const verseNum = verse.verse_key?.split(':')[1] || ((currentPage - 1) * PAGE_SIZE + index + 1);
                             return (
-                              <motion.div
-                                key={verse.id || index}
-                                className="flex gap-3 items-start"
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.04, duration: 0.25 }}
+                              <div
+                                key={verse.id || `${currentPage}-${index}`}
+                                className="flex gap-3 items-start p-2 rounded-lg hover:bg-emerald-50/50 transition-colors"
                               >
-                                {/* Verse number badge */}
                                 <span className="flex-shrink-0 mt-0.5 w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center border border-emerald-200">
                                   {verseNum}
                                 </span>
                                 <p className="text-gray-700 text-sm leading-relaxed">
-                                  {translationVerses[index]?.text}
+                                  {displayedTranslations[index]?.text}
                                 </p>
-                              </motion.div>
+                              </div>
                             );
                           })}
                         </div>
@@ -311,6 +358,35 @@ const Surah = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+                {/* ── Pagination Controls (Bottom) ── */}
+                {totalPages > 1 && !showAllVerses && (
+                  <div className="bg-amber-100/60 border-t border-amber-200 px-6 py-3 flex items-center justify-between text-xs font-medium text-amber-900">
+                    <button
+                      onClick={() => {
+                        setCurrentPage(p => Math.max(p - 1, 1));
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      disabled={currentPage === 1}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-white border border-amber-300 rounded hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                    >
+                      <ChevronLeft className="w-4 h-4" /> Previous Page
+                    </button>
+
+                    <span>Page {currentPage} of {totalPages}</span>
+
+                    <button
+                      onClick={() => {
+                        setCurrentPage(p => Math.min(p + 1, totalPages));
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      disabled={currentPage === totalPages}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-white border border-amber-300 rounded hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                    >
+                      Next Page <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
 
                 {/* ── Bottom ornament ── */}
                 <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-800 py-3 flex items-center justify-center gap-3">
@@ -324,7 +400,7 @@ const Surah = () => {
               </div>{/* inner ornamental border */}
             </div>{/* parchment bg */}
           </div>{/* golden border */}
-        </motion.div>
+        </div>
       </div>
     </motion.div>
   );
