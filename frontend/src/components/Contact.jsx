@@ -477,7 +477,7 @@ const Contact = () => {
           viewport={{ once: true }}
           transition={{ duration: 1 }}
         >
-          <motion.div
+          {/* <motion.div
             className="inline-flex flex-col items-center gap-6 bg-gradient-to-br from-white/70 to-emerald-50/70 backdrop-blur-sm rounded-3xl p-10 border border-white/50 shadow-lg"
             whileHover={{ scale: 1.02, boxShadow: "0 25px 50px rgba(0,0,0,0.15)" }}
           >
@@ -501,7 +501,7 @@ const Contact = () => {
                 Our Programs
               </motion.button>
             </div>
-          </motion.div>
+          </motion.div> */}
         </motion.div>
       </div>
     </section>
