@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { App as AntApp } from 'antd';
 import axios from 'axios';
+import { api } from './api/axios';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Leaders from './components/Leaders';
@@ -13,12 +14,17 @@ import Downloads from './components/Downloads';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Articles from './components/Articles';
+import ArticlesListing from './components/ArticlesListing';
 import ArticleDetail from './components/ArticleDetail';
 import EventDetail from './components/EventDetail';
 import MemoryDetail from './components/MemoryDetail';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import QuranSurahs from './components/QuranSurahs';
 import Surah from './components/Surah';
+import DhikrExperience from './components/DhikrExperience';
+import MobileNavigation from './components/MobileNavigation';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import TodayEventsModal from './components/TodayEventsModal';
 
 // Admin Imports
 import Login from './admin/pages/Login';
@@ -36,7 +42,9 @@ import ArticlesPage from './admin/pages/ArticlesPage';
 const AppContent = () => {
   const { message } = AntApp.useApp();
   const [activeSection, setActiveSection] = useState('hero');
+  const [eventSummary, setEventSummary] = useState({ activeCount: 0, todayEvents: [] });
   const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   // Dynamic PWA manifest switcher for Admin PWA app
   useEffect(() => {
@@ -102,6 +110,31 @@ const AppContent = () => {
     return () => observer.disconnect();
   }, []);
 
+  // Resolve header links from detail pages only after the home sections are mounted.
+  useEffect(() => {
+    if (location.pathname !== '/') return;
+    const sectionId = new URLSearchParams(location.search).get('section');
+    if (!sectionId) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.getElementById(sectionId);
+      if (target) {
+        window.scrollTo({ top: Math.max(0, target.getBoundingClientRect().top + window.scrollY - 72), behavior: 'smooth' });
+        setActiveSection(sectionId);
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    api.get('/events/summary')
+      .then((response) => setEventSummary({
+        activeCount: response.data?.activeCount || 0,
+        todayEvents: response.data?.todayEvents || [],
+      }))
+      .catch((error) => console.error('Unable to load event summary', error));
+  }, []);
+
   return (
     <div className="min-h-screen font-sans relative overflow-x-hidden bg-gray-50">
       {/* Animated SVG Background for public routes */}
@@ -121,12 +154,12 @@ const AppContent = () => {
           }}
         />
       </div>
-      <div className="relative z-10">
+      <div className={`relative z-10 ${isAdminRoute ? '' : 'pb-24 lg:pb-0'}`}>
         <Routes>
         {/* Public Routes */}
         <Route path="/" element={
           <>
-            <Header activeSection={activeSection} setActiveSection={setActiveSection} />
+            <Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} />
             <Hero />
             <UpcomingEvents />
             <Leaders />
@@ -139,12 +172,15 @@ const AppContent = () => {
             <Footer />
           </>
         } />
-        <Route path="/article/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><ArticleDetail /><Footer /></>} />
-        <Route path="/events/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><EventDetail /><Footer /></>} />
-        <Route path="/event/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><EventDetail /><Footer /></>} />
-        <Route path="/memories/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><MemoryDetail /><Footer /></>} />
-        <Route path="/quran" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><QuranSurahs /><Footer /></>} />
-        <Route path="/surah/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} /><Surah /><Footer /></>} />
+        <Route path="/articles" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><ArticlesListing /><Footer /></>} />
+        <Route path="/article/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><ArticleDetail /><Footer /></>} />
+        <Route path="/events/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><EventDetail /><Footer /></>} />
+        <Route path="/event/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><EventDetail /><Footer /></>} />
+        <Route path="/memories/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><MemoryDetail /><Footer /></>} />
+        <Route path="/quran" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><QuranSurahs /><Footer /></>} />
+        <Route path="/surah/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><Surah /><Footer /></>} />
+        <Route path="/dhikr" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><DhikrExperience /></>} />
+        <Route path="/dhikr/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><DhikrExperience /></>} />
 
         {/* Admin Login */}
         <Route path="/admin/login" element={<Login />} />
@@ -163,6 +199,9 @@ const AppContent = () => {
         </Route>
       </Routes>
       </div>
+      {!isAdminRoute && <MobileNavigation activeEventCount={eventSummary.activeCount} />}
+      {!isAdminRoute && <PWAInstallPrompt />}
+      {!isAdminRoute && <TodayEventsModal events={eventSummary.todayEvents} />}
     </div>
   );
 };

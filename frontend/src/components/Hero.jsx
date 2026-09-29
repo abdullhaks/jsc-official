@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { ArrowDown, Sparkles, BookOpen, Heart, Star, Calendar, Book, Compass, Clock, Users, Mic, GraduationCap } from 'lucide-react';
 import {useNavigate} from 'react-router-dom'
 import jsc_logo2 from '../assets/jsc_logo2.png'
+import quranIcon from '../assets/quran.png';
+import tasbihIcon from '../assets/tasbih.png';
 
 const LogoPlaceholder = () => (
   <div className="relative">
@@ -164,10 +166,10 @@ const Hero = () => {
 
   // Islamic app data with more vibrant colors
   const islamicApps = useMemo(() => [
-   { icon: Book, label: 'Quran', color: 'from-emerald-500 via-green-500 to-teal-500', onClick: () => navigate('/quran') },
+   { iconSrc: quranIcon, label: 'Quran', color: 'from-emerald-500 via-green-500 to-teal-500', onClick: () => navigate('/quran') },
     // { icon: Clock, label: 'Prayer', color: 'from-blue-500 via-indigo-500 to-purple-500' },
     // { icon: Compass, label: 'Qibla', color: 'from-purple-500 via-pink-500 to-rose-500' },
-    { icon: Mic, label: 'Dhikr', color: 'from-teal-500 via-cyan-500 to-blue-500' },
+    { iconSrc: tasbihIcon, label: 'Dhikr', color: 'from-teal-500 via-cyan-500 to-blue-500', onClick: () => navigate('/dhikr') },
     // { icon: Users, label: 'Community', color: 'from-orange-500 via-amber-500 to-yellow-500' },
     // { icon: Heart, label: 'Dua', color: 'from-rose-500 via-pink-500 to-purple-500' },
     // { icon: Star, label: 'Islamic', color: 'from-green-500 via-emerald-500 to-teal-500' },
@@ -442,7 +444,7 @@ const Hero = () => {
                       }}
                       transition={{ duration: 1, repeat: Infinity, delay:0.0 }}
                     >
-                      <app.icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white mb-1 sm:mb-2" />
+                      {app.iconSrc ? <img src={app.iconSrc} alt="" className="mb-1 h-5 w-5 object-contain brightness-0 invert drop-shadow-sm sm:mb-2 sm:h-6 sm:w-6 md:h-7 md:w-7" /> : <app.icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white mb-1 sm:mb-2" />}
                       <h4 className="text-white font-semibold text-xs sm:text-sm text-center leading-tight">{app.label}</h4>
                       
                       {/* Shine effect */}

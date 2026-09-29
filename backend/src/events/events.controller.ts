@@ -18,6 +18,12 @@ export class EventsController {
     return PaginationHelper.buildPaginatedResponse(items, total, paginationDto.page || 1, limit);
   }
 
+  @Public()
+  @Get('events/summary')
+  getPublicSummary() {
+    return this.eventsService.getPublicSummary();
+  }
+
   @Get('admin/events')
   findAllAdmin() {
     return this.eventsService.findAllAdmin();

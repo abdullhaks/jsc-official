@@ -22,8 +22,12 @@ const Contact = () => {
   };
 
   const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
+    const value = email.trim();
+    if (value.length > 254 || /\s/.test(value)) return false;
+    const [local, domain, ...extra] = value.split('@');
+    if (!local || !domain || extra.length || local.length > 64 || domain.length > 253) return false;
+    if (domain.includes('..') || !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(domain)) return false;
+    return /^[^@\s]+$/.test(local);
   };
 
   const handleSubmit = async (e) => {
@@ -55,7 +59,7 @@ const Contact = () => {
     try {
       const templateParams = {
         name: formData.name,
-        email: formData.email,
+        email: formData.email.trim(),
         phone: formData.phone || "Not provided",
         subject: formData.subject || "No subject",
         message: formData.message,
@@ -276,6 +280,11 @@ const Contact = () => {
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                           placeholder={field.placeholder}
+                          required={field.required}
+                          autoComplete={field.name === 'email' ? 'email' : field.name === 'name' ? 'name' : field.name === 'phone' ? 'tel' : 'off'}
+                          inputMode={field.name === 'email' ? 'email' : field.name === 'phone' ? 'tel' : undefined}
+                          maxLength={field.name === 'email' ? 254 : undefined}
+                          pattern={field.name === 'email' ? '[^\\s@]+@[^\\s@]+\\.[^\\s@]+' : undefined}
                         />
                       </div>
                     </motion.div>
@@ -309,6 +318,8 @@ const Contact = () => {
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                         placeholder="Tell us more about your inquiry..."
+                        required
+                        minLength={10}
                       />
                     </div>
                   </motion.div>

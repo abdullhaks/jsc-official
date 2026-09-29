@@ -1,48 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Mail, Phone, MapPin, ArrowUp, Facebook, Instagram, Youtube, Twitter, Linkedin,
-  BookOpen, Users, Heart, Globe, Send, Clock
+  Mail, Phone, MapPin, ArrowUp, Instagram, Youtube,
+  BookOpen, Users, Heart, Globe, Clock
 } from 'lucide-react';
 
 const Footer = () => {
-  const [email, setEmail] = useState('');
-  const [isSubscribed, setIsSubscribed] = useState(false);
-
   const socialLinks = [
     { 
-      icon: <Facebook className="w-5 h-5" />, 
-      label: 'Facebook', 
-      href: '', 
-      color: 'hover:text-blue-600', 
-      bgGradient: 'from-blue-600 to-blue-700',
-      followers: ''
-    },
-    { 
-      icon: <Instagram className="w-5 h-5" />, 
+      icon: <Instagram className="w-5 h-5" aria-hidden="true" />,
       label: 'Instagram', 
       href: 'https://www.instagram.com/jeelanistudiescentre?igsh=MWkzaGxrMGIzc3MxMw==', 
-      color: 'hover:text-pink-500', 
-      bgGradient: 'from-pink-500 to-rose-500',
-      followers: ''
+      bgGradient: 'from-fuchsia-500 to-rose-500',
     },
     { 
-      icon: <Youtube className="w-5 h-5" />, 
+      icon: <Youtube className="w-5 h-5" aria-hidden="true" />,
       label: 'YouTube', 
       href: 'https://youtube.com/@vijayamargam8134?si=fz2oIv68ra9id0u5', 
-      color: 'hover:text-red-600', 
       bgGradient: 'from-red-600 to-red-700',
-      followers: '15.7K'
     },
-    { 
-      icon: <Twitter className="w-5 h-5" />, 
-      label: 'Twitter', 
-      href: '', 
-      color: 'hover:text-blue-400', 
-      bgGradient: 'from-blue-400 to-blue-500',
-      followers: '6.3K'
-    },
-   
   ];
 
   const quickLinks = [
@@ -66,15 +42,6 @@ const Footer = () => {
     { number: '25+', label: 'Years of Service', icon: <Clock className="w-5 h-5" /> },
     { number: '300+', label: 'Community Programs', icon: <Heart className="w-5 h-5" /> }
   ];
-
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (email) {
-      setIsSubscribed(true);
-      setEmail('');
-      setTimeout(() => setIsSubscribed(false), 3000);
-    }
-  };
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -192,7 +159,7 @@ const Footer = () => {
         </motion.div>
 
         {/* Main Footer Content */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16">
           {/* Quick Links */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -208,9 +175,9 @@ const Footer = () => {
                 <motion.li 
                   key={index} 
                   whileHover={{ x: 10, color: "#10b981" }}
-                  className="text-gray-300 transition-colors duration-300"
+                  className="text-white transition-colors duration-300"
                 >
-                  <a href={link.href} className="flex items-center gap-3 hover:text-emerald-400">
+                  <a href={link.href} className="flex items-center gap-3 text-white hover:text-emerald-200">
                     {link.icon}
                     {link.label}
                   </a>
@@ -274,7 +241,7 @@ const Footer = () => {
             </div>
           </motion.div>
 
-          {/* Newsletter Subscription */}
+          {/* Social links */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -282,48 +249,22 @@ const Footer = () => {
             transition={{ duration: 0.8, delay: 0.5 }}
           >
             <motion.h4 className="text-2xl font-bold mb-8 bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
-              Newsletter
+              Follow Us
             </motion.h4>
-            <div className="space-y-4">
-              <p className="text-gray-300 text-sm">Stay updated with our latest news and events</p>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full py-3 px-4 bg-white/10 border border-white/20 rounded-xl text-gray-300 placeholder-gray-400 focus:outline-none focus:border-emerald-400"
-                />
-                <motion.button
-                  onClick={handleSubscribe}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-400 to-blue-400 p-2 rounded-lg"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Send className="w-5 h-5 text-white" />
-                </motion.button>
-              </div>
-              {isSubscribed && (
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-emerald-400 text-sm"
-                >
-                  Thank you for subscribing!
-                </motion.p>
-              )}
-            </div>
-            <motion.div className="mt-8">
-              <motion.h5 className="text-lg font-semibold mb-4">Follow Us</motion.h5>
-              <div className="grid grid-cols-3 gap-3">
+            <p className="mb-5 text-sm leading-6 text-gray-300">Keep in touch with our latest talks, activities and community updates.</p>
+            <motion.div>
+              <div className="flex gap-3">
                 {socialLinks.map((social, index) => (
                   <motion.a
                     key={index}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    whileHover={{ scale: 1.2, rotate: 360 }}
-                    className={`flex items-center justify-center w-12 h-12 bg-gradient-to-br ${social.bgGradient} rounded-xl text-white`}
+                    whileHover={{ scale: 1.08, y: -3 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label={`Visit JSC on ${social.label}`}
+                    title={social.label}
+                    className={`flex items-center justify-center w-12 h-12 bg-gradient-to-br ${social.bgGradient} rounded-full text-white shadow-lg ring-1 ring-white/30 transition-shadow hover:shadow-xl`}
                   >
                     {social.icon}
                   </motion.a>

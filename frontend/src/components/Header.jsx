@@ -5,17 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import jsc_logo1 from '../assets/jsc_logo1.png';
 
-export const Header = ({ activeSection, setActiveSection }) => {
+export const Header = ({ activeSection, setActiveSection, activeEventCount = 0 }) => {
   const { i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const [showMoreDropdown, setShowMoreDropdown] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   const navItems = [
     { id: 'hero',          label: 'Home',         icon: <Globe    className="w-4 h-4" /> },
-    { id: 'upcomingEvents',label: 'Events',        icon: <Calendar className="w-4 h-4" /> },
+    { id: 'upcomingEvents',label: 'Events',        icon: <Calendar className="w-4 h-4" />, badge: activeEventCount },
     { id: 'leaders',       label: 'Leaders',       icon: <Users    className="w-4 h-4" /> },
     { id: 'recentUploads', label: 'Uploads',       icon: <Youtube  className="w-4 h-4" /> },
     { id: 'publicEvents',  label: 'Memories',      icon: <Calendar className="w-4 h-4" /> },
@@ -24,6 +25,8 @@ export const Header = ({ activeSection, setActiveSection }) => {
     { id: 'articles',      label: 'Articles',      icon: <FileText className="w-4 h-4" /> },
     { id: 'contact',       label: 'Contact',       icon: <Mail     className="w-4 h-4" /> },
   ];
+  const primaryNavItems = navItems.filter((item) => ['hero', 'upcomingEvents', 'leaders', 'publications', 'articles'].includes(item.id));
+  const moreNavItems = navItems.filter((item) => !primaryNavItems.includes(item));
 
   const languages = [
     { code: 'en', label: 'English',  flag: '🇺🇸' },
@@ -41,17 +44,20 @@ export const Header = ({ activeSection, setActiveSection }) => {
   const scrollToSection = (e, sectionId) => {
     e.preventDefault();
     e.stopPropagation();
-    if (location.pathname !== '/') {
-      navigate('/');
-      setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setActiveSection(sectionId);
-      }, 120);
+    if (sectionId === 'articles') {
+      navigate('/articles');
+    } else if (sectionId === 'dhikr') {
+      navigate('/dhikr');
+    } else if (location.pathname !== '/') {
+      navigate(`/?section=${encodeURIComponent(sectionId)}`);
     } else {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const target = document.getElementById(sectionId);
+      if (target) {
+        window.scrollTo({ top: Math.max(0, target.getBoundingClientRect().top + window.scrollY - 72), behavior: 'smooth' });
+      }
       setActiveSection(sectionId);
     }
-    setTimeout(() => { setIsMenuOpen(false); setShowLangDropdown(false); }, 300);
+    setTimeout(() => { setIsMenuOpen(false); setShowLangDropdown(false); setShowMoreDropdown(false); }, 300);
   };
 
   const changeLanguage = (code) => {
@@ -78,7 +84,7 @@ export const Header = ({ activeSection, setActiveSection }) => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-        <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
 
             {/* ── Logo ── */}
@@ -115,8 +121,8 @@ export const Header = ({ activeSection, setActiveSection }) => {
             </motion.div>
 
             {/* ── Desktop Nav ── */}
-            <nav className="hidden lg:flex items-center gap-0.5" aria-label="Main navigation">
-              {navItems.map((item, i) => (
+            <nav className="hidden lg:flex min-w-0 items-center gap-0.5" aria-label="Main navigation">
+              {primaryNavItems.map((item, i) => (
                 <motion.button
                   key={item.id}
                   onClick={(e) => scrollToSection(e, item.id)}
@@ -148,9 +154,31 @@ export const Header = ({ activeSection, setActiveSection }) => {
                     <span className={isActive(item.id) ? 'text-emerald-700 font-semibold' : 'group-hover:text-emerald-700'}>
                       {item.label}
                     </span>
+                    {item.badge > 0 && <span className="grid min-w-4 h-4 place-items-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">{item.badge > 99 ? '99+' : item.badge}</span>}
                   </span>
                 </motion.button>
               ))}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => { setShowMoreDropdown(!showMoreDropdown); setShowLangDropdown(false); }}
+                  className="flex items-center gap-1 rounded-lg px-2.5 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                  aria-expanded={showMoreDropdown}
+                >
+                  More <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showMoreDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {showMoreDropdown && (
+                    <motion.div initial={{ opacity: 0, y: -6, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.96 }} transition={{ duration: 0.16 }} className="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl border border-gray-100 bg-white p-1.5 shadow-2xl">
+                      {moreNavItems.map((item) => (
+                        <button key={item.id} onClick={(event) => scrollToSection(event, item.id)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition hover:bg-emerald-50 hover:text-emerald-700">
+                          <span className="text-emerald-600">{item.icon}</span>{item.label}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </nav>
 
             {/* ── Right Controls ── */}
@@ -159,11 +187,11 @@ export const Header = ({ activeSection, setActiveSection }) => {
               {/* Desktop Language Dropdown */}
               <div className="relative hidden lg:block">
                 <motion.button
-                  onClick={() => setShowLangDropdown(!showLangDropdown)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-all duration-200"
+                  onClick={() => { setShowLangDropdown(!showLangDropdown); setShowMoreDropdown(false); }}
+                  className="flex items-center gap-1.5 rounded-lg border border-emerald-100 bg-emerald-50/70 px-3 py-2 text-sm font-semibold text-emerald-800 transition-all duration-200 hover:bg-emerald-100"
                   whileTap={{ scale: 0.97 }}
                 >
-                  <span className="text-base leading-none">{getCurrentLanguage().flag}</span>
+                  <span className="text-base leading-none">{getCurrentLanguage().flag}</span><span className="hidden xl:inline">Language</span>
                   <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showLangDropdown ? 'rotate-180' : ''}`} />
                 </motion.button>
                 <AnimatePresence>
@@ -197,7 +225,7 @@ export const Header = ({ activeSection, setActiveSection }) => {
               {/* Mobile language button */}
               <div className="relative lg:hidden">
                 <motion.button
-                  onClick={() => setShowLangDropdown(!showLangDropdown)}
+                  onClick={() => { setShowLangDropdown(!showLangDropdown); setShowMoreDropdown(false); }}
                   className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
                   whileTap={{ scale: 0.95 }}
                 >
@@ -283,6 +311,7 @@ export const Header = ({ activeSection, setActiveSection }) => {
                         {item.icon}
                       </span>
                       <span>{item.label}</span>
+                      {item.badge > 0 && <span className="ml-auto grid min-w-5 h-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{item.badge > 99 ? '99+' : item.badge}</span>}
                       {isActive(item.id) && (
                         <motion.span
                           layoutId="mobile-dot"
@@ -300,10 +329,10 @@ export const Header = ({ activeSection, setActiveSection }) => {
       </motion.header>
 
       {/* Backdrop for dropdowns */}
-      {(showLangDropdown || isMenuOpen) && (
+      {(showLangDropdown || showMoreDropdown || isMenuOpen) && (
         <div
           className="fixed inset-0 z-40"
-          onClick={() => { setShowLangDropdown(false); setIsMenuOpen(false); }}
+          onClick={() => { setShowLangDropdown(false); setShowMoreDropdown(false); setIsMenuOpen(false); }}
         />
       )}
     </>

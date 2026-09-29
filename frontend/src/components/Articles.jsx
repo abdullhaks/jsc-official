@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, User, Calendar, ExternalLink, ArrowRight, Eye } from 'lucide-react';
 import { api } from '../api/axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Articles = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -68,14 +69,18 @@ const Articles = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {articles.map((article, index) => (
+          {articles.slice(0, 3).map((article, index) => (
             <motion.div
               key={article._id}
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full"
+              className="cursor-pointer bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              onClick={() => navigate(`/article/${article._id}`)}
+              onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') navigate(`/article/${article._id}`); }}
+              role="link"
+              tabIndex={0}
             >
               <div className="h-48 overflow-hidden relative flex-shrink-0">
                 <img 
@@ -110,6 +115,11 @@ const Articles = () => {
               </div>
             </motion.div>
           ))}
+        </div>
+        <div className="mt-10 text-center">
+          <Link to="/articles" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition hover:from-indigo-700 hover:to-purple-700">
+            Explore more articles <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </section>

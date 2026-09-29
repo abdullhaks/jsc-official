@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { User, Calendar, ArrowLeft, Share2, Eye } from 'lucide-react';
 import { api } from '../api/axios';
 
 const ArticleDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -147,10 +148,10 @@ const ArticleDetail = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-emerald-50/20 pt-28 pb-20">
       <div className="max-w-4xl mx-auto px-6 lg:px-8">
-        <Link to="/" className="inline-flex items-center space-x-2 text-emerald-700 hover:text-emerald-800 font-semibold mb-8 transition-colors">
+        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/articles')} className="inline-flex items-center space-x-2 text-emerald-700 hover:text-emerald-800 font-semibold mb-8 transition-colors">
           <ArrowLeft className="w-5 h-5" />
-          <span>Back to Home</span>
-        </Link>
+          <span>Back</span>
+        </button>
         
         <motion.div
           initial={{ opacity: 0, y: 30 }}
