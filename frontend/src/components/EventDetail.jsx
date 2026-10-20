@@ -14,9 +14,8 @@ const EventDetail = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await api.get(`/events`);
-        const items = res.data.items || res.data;
-        const found = items.find(e => e._id === id);
+        const res = await api.get(`/events/${id}`);
+        const found = res.data;
         if (found) {
           setEvent(found);
           // Set dynamic metadata/OG tags
@@ -76,10 +75,7 @@ const EventDetail = () => {
   };
 
   const handleExploreAll = () => {
-    navigate('/');
-    setTimeout(() => {
-      document.getElementById('upcomingEvents')?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    navigate('/events');
   };
 
   if (loading) {
@@ -94,9 +90,9 @@ const EventDetail = () => {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-emerald-50/30 pt-28 pb-20">
       <div className="max-w-4xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2 text-emerald-700 hover:text-emerald-800 font-semibold transition-colors">
+          <Link to="/events" className="inline-flex items-center space-x-2 text-emerald-700 hover:text-emerald-800 font-semibold transition-colors">
             <ArrowLeft className="w-5 h-5" />
-            <span>Back to Home</span>
+            <span>Back to Events</span>
           </Link>
           <button
             onClick={handleExploreAll}

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, ExternalLink, Sparkles, Users, Star, ArrowRight, Share2 } from 'lucide-react';
 import { api } from '../api/axios';
+import { useNavigate } from 'react-router-dom';
 import dhikr from '../assets/dhikr.jpg';
 
 const jeelaniLocation = "https://maps.app.goo.gl/VY6p12Zt2vt8C8W69";
 const sjiaLocation = "https://maps.app.goo.gl/tRXGDLnN5P8Ac8z46";
 
 const UpcomingEvents = () => {
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [timeLeft, setTimeLeft] = useState({});
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ const UpcomingEvents = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await api.get('/events?limit=4');
+        const res = await api.get('/events?limit=3');
         const fetchedEvents = res.data.items || res.data;
         // Transform the dates to Date objects
         const transformedEvents = fetchedEvents.map(ev => {
@@ -543,7 +545,7 @@ const UpcomingEvents = () => {
             className="group inline-flex items-center space-x-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => navigate('/events')}
           >
             <Calendar className="w-5 sm:w-6 h-5 sm:h-6" />
             <span className="text-sm sm:text-base">View All Events</span>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Calendar, Users, Heart, Star, MapPin, Clock, ArrowRight, Sparkles } from 'lucide-react';
+import { Camera, Calendar, Users, Heart, Star, MapPin, Clock, ArrowRight, Sparkles, Share2 } from 'lucide-react';
 import { api } from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,7 +12,7 @@ const PublicEvents = () => {
   useEffect(() => {
     const fetchMemories = async () => {
       try {
-        const res = await api.get('/memories?limit=100');
+        const res = await api.get('/memories?limit=9');
         const items = res.data.items || res.data;
         const mapped = items.map(item => ({
           id: item._id,
@@ -60,6 +60,16 @@ const PublicEvents = () => {
     // Varying heights for collage effect
     const heights = ['h-48 md:h-64', 'h-40 md:h-48', 'h-64 md:h-80', 'h-32 md:h-40', 'h-56 md:h-64', 'h-44 md:h-56'];
     return heights[index % heights.length];
+  };
+
+  const shareMemory = async (event) => {
+    const url = `${window.location.origin}/memories/${event.id}`;
+    const data = { title: event.publicEventName, text: event.description, url };
+    if (navigator.share) {
+      try { await navigator.share(data); } catch (error) { if (error?.name !== 'AbortError') console.error('Memory sharing failed', error); }
+      return;
+    }
+    try { await navigator.clipboard.writeText(url); window.alert('Memory link copied to clipboard.'); } catch { window.prompt('Copy this memory link:', url); }
   };
 
 
@@ -290,6 +300,9 @@ const PublicEvents = () => {
                     <Calendar className="w-3 h-3" />
                     <span>{formatDate(event.date)}</span>
                   </motion.div>
+                  <button onClick={(clickEvent) => { clickEvent.stopPropagation(); shareMemory(event); }} className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 hover:text-amber-900">
+                    <Share2 className="h-3.5 w-3.5" /> Share memory
+                  </button>
 
                   {/* Highlights - Only for larger cards */}
                   {(index === 0 || index === 2) && (
@@ -411,10 +424,10 @@ const PublicEvents = () => {
             className="group inline-flex items-center space-x-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => document.getElementById('upcomingEvents')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => navigate('/memories')}
           >
             <Camera className="w-6 h-6" />
-            <span>Join Our Next Event</span>
+            <span>View All Memories</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </motion.button>
         </motion.div>

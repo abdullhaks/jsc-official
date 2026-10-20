@@ -21,8 +21,8 @@ const MobileNavigation = ({ activeEventCount = 0 }) => {
     { label: 'Dhikr', icon: TasbihIcon, iconSrc: tasbihIcon, action: () => navigate('/dhikr'), active: pathname === '/dhikr' || pathname.startsWith('/dhikr/'), iconColor: 'text-amber-700', hoverColor: 'hover:bg-amber-50', activeColor: 'bg-amber-600 shadow-amber-600/25', focusColor: 'focus-visible:ring-amber-500' },
     { label: 'Articles', icon: FileText, action: () => navigate('/articles'), active: pathname.startsWith('/article'), iconColor: 'text-violet-600', hoverColor: 'hover:bg-violet-50', activeColor: 'bg-violet-600 shadow-violet-600/25', focusColor: 'focus-visible:ring-violet-500' },
     { label: 'Events', icon: CalendarDays, action: () => {
-      navigate('/?section=upcomingEvents');
-    }, active: pathname.startsWith('/event'), badge: activeEventCount, iconColor: 'text-rose-600', hoverColor: 'hover:bg-rose-50', activeColor: 'bg-rose-600 shadow-rose-600/25', focusColor: 'focus-visible:ring-rose-500' },
+      navigate('/events');
+    }, active: pathname === '/events' || pathname.startsWith('/events/') || pathname.startsWith('/event/'), badge: activeEventCount, iconColor: 'text-rose-600', hoverColor: 'hover:bg-rose-50', activeColor: 'bg-rose-600 shadow-rose-600/25', focusColor: 'focus-visible:ring-rose-500' },
   ];
 
   return (

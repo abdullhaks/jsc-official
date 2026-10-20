@@ -16,16 +16,16 @@ export const Header = ({ activeSection, setActiveSection, activeEventCount = 0 }
 
   const navItems = [
     { id: 'hero',          label: 'Home',         icon: <Globe    className="w-4 h-4" /> },
-    { id: 'upcomingEvents',label: 'Events',        icon: <Calendar className="w-4 h-4" />, badge: activeEventCount },
+    { id: 'events',        label: 'Events',        icon: <Calendar className="w-4 h-4" />, badge: activeEventCount, to: '/events' },
     { id: 'leaders',       label: 'Leaders',       icon: <Users    className="w-4 h-4" /> },
     { id: 'recentUploads', label: 'Uploads',       icon: <Youtube  className="w-4 h-4" /> },
-    { id: 'publicEvents',  label: 'Memories',      icon: <Calendar className="w-4 h-4" /> },
+    { id: 'memories',      label: 'Memories',      icon: <Calendar className="w-4 h-4" />, to: '/memories' },
     { id: 'publications',  label: 'Publications',  icon: <BookOpen className="w-4 h-4" /> },
     { id: 'downloads',     label: 'Downloads',     icon: <Download className="w-4 h-4" /> },
     { id: 'articles',      label: 'Articles',      icon: <FileText className="w-4 h-4" /> },
     { id: 'contact',       label: 'Contact',       icon: <Mail     className="w-4 h-4" /> },
   ];
-  const primaryNavItems = navItems.filter((item) => ['hero', 'upcomingEvents', 'leaders', 'publications', 'articles'].includes(item.id));
+  const primaryNavItems = navItems.filter((item) => ['hero', 'events', 'leaders', 'publications', 'articles'].includes(item.id));
   const moreNavItems = navItems.filter((item) => !primaryNavItems.includes(item));
 
   const languages = [
@@ -44,7 +44,10 @@ export const Header = ({ activeSection, setActiveSection, activeEventCount = 0 }
   const scrollToSection = (e, sectionId) => {
     e.preventDefault();
     e.stopPropagation();
-    if (sectionId === 'articles') {
+    const navItem = navItems.find((item) => item.id === sectionId);
+    if (navItem?.to) {
+      navigate(navItem.to);
+    } else if (sectionId === 'articles') {
       navigate('/articles');
     } else if (sectionId === 'dhikr') {
       navigate('/dhikr');
@@ -69,7 +72,12 @@ export const Header = ({ activeSection, setActiveSection, activeEventCount = 0 }
   const getCurrentLanguage = () =>
     languages.find(lang => lang.code === i18n.language) || languages[0];
 
-  const isActive = (id) => activeSection === id && location.pathname === '/';
+  const isActive = (id) => {
+    if (id === 'events') return location.pathname === '/events' || location.pathname.startsWith('/events/') || location.pathname.startsWith('/event/');
+    if (id === 'memories') return location.pathname === '/memories' || location.pathname.startsWith('/memories/');
+    if (id === 'articles') return location.pathname === '/articles' || location.pathname.startsWith('/article/');
+    return activeSection === id && location.pathname === '/';
+  };
 
   return (
     <>

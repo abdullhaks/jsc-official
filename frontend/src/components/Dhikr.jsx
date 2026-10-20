@@ -22,8 +22,8 @@ const Dhikr = () => {
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
         <div className="relative mx-auto max-w-5xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-emerald-100 backdrop-blur"><Heart className="h-4 w-4" /> Daily remembrance</span>
-          <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">Swalath Jeelani</h1>
-          <p dir="rtl" lang="ar" className="mt-4 font-serif text-2xl text-emerald-100">الصلاة الجيلانية</p>
+          <h1 dir="rtl" lang="ar" className="mt-5 font-serif text-4xl font-bold tracking-tight sm:text-5xl">صلّوا على الحبيب ﷺ</h1>
+          <p dir="rtl" lang="ar" className="mx-auto mt-4 max-w-2xl font-serif text-xl leading-9 text-emerald-100">اوراد مأثورة عن المشايخ في الصلاه على النبي المختار ﷺ<br />الترتيب والاجازة<br />-الشيخ محمد عبد الرحيم شاه القادري الجشتي</p>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-emerald-100/90 sm:text-base">A calm, focused reading space for the selected salawath and dhikr. Choose a remembrance below, then read without distraction.</p>
         </div>
       </section>

@@ -79,10 +79,7 @@ const MemoryDetail = () => {
   };
 
   const handleExploreAll = () => {
-    navigate('/');
-    setTimeout(() => {
-      document.getElementById('publicEvents')?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    navigate('/memories');
   };
 
   if (loading) {

@@ -8,6 +8,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
       registerType: 'autoUpdate',
       manifest: {
         name: 'Jeelani Studies Centre',
@@ -30,27 +33,6 @@ export default defineConfig({
           }
         ]
       },
-
-
-    workbox: {
-    globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'],
-    runtimeCaching: [
-      {
-        urlPattern: ({ request }) => request.destination === 'image',
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'images',
-          expiration: {
-            maxEntries: 50,
-            maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-          },
-        },
-      },
-    ],
-  },
-
-
-
     })
   ]
 })

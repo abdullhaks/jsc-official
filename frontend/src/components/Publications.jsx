@@ -370,7 +370,7 @@ const Publications = () => {
           viewport={{ once: true }}
           transition={{ duration: 1 }}
         >
-          <motion.div
+          {/* <motion.div
             className="inline-flex flex-col items-center gap-4 bg-gradient-to-br from-emerald-50 to-blue-50 backdrop-blur-sm rounded-3xl p-8 border border-white/50"
             whileHover={{ scale: 1.02, boxShadow: "0 20px 40px rgba(0,0,0,0.1)" }}
           >
@@ -385,7 +385,7 @@ const Publications = () => {
             >
               Subscribe Now
             </motion.button>
-          </motion.div>
+          </motion.div> */}
         </motion.div>
       </div>
     </section>

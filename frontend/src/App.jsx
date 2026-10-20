@@ -25,6 +25,9 @@ import DhikrExperience from './components/DhikrExperience';
 import MobileNavigation from './components/MobileNavigation';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import TodayEventsModal from './components/TodayEventsModal';
+import EventsListing from './components/EventsListing';
+import MemoriesListing from './components/MemoriesListing';
+import PushNotificationPrompt from './components/PushNotificationPrompt';
 
 // Admin Imports
 import Login from './admin/pages/Login';
@@ -173,6 +176,8 @@ const AppContent = () => {
           </>
         } />
         <Route path="/articles" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><ArticlesListing /><Footer /></>} />
+        <Route path="/events" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><EventsListing /><Footer /></>} />
+        <Route path="/memories" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><MemoriesListing /><Footer /></>} />
         <Route path="/article/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><ArticleDetail /><Footer /></>} />
         <Route path="/events/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><EventDetail /><Footer /></>} />
         <Route path="/event/:id" element={<><Header activeSection={activeSection} setActiveSection={setActiveSection} activeEventCount={eventSummary.activeCount} /><EventDetail /><Footer /></>} />
@@ -202,6 +207,7 @@ const AppContent = () => {
       {!isAdminRoute && <MobileNavigation activeEventCount={eventSummary.activeCount} />}
       {!isAdminRoute && <PWAInstallPrompt />}
       {!isAdminRoute && <TodayEventsModal events={eventSummary.todayEvents} />}
+      {!isAdminRoute && <PushNotificationPrompt />}
     </div>
   );
 };

@@ -169,7 +169,7 @@ const Leaders = () => {
             viewport={{ once: true }}
             transition={{ duration: 1, delay: 0.4 }}
           >
-            Meet the distinguished scholars and leaders who dedicate their lives to preserv and spread 
+            Meet the distinguished scholars and leaders who dedicate their lives to preserve and spread 
             the authentic teachings of Islam through wisdom, compassion, and unwavering commitment.
           </motion.p>
         </motion.div>

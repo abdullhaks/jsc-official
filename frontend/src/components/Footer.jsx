@@ -4,6 +4,7 @@ import {
   Mail, Phone, MapPin, ArrowUp, Instagram, Youtube,
   BookOpen, Users, Heart, Globe, Clock
 } from 'lucide-react';
+import { PushNotificationSettings } from './PushNotificationPrompt';
 
 const Footer = () => {
   const socialLinks = [
@@ -271,6 +272,7 @@ const Footer = () => {
                 ))}
               </div>
             </motion.div>
+            <PushNotificationSettings />
           </motion.div>
         </div>
 

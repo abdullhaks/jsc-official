@@ -27,7 +27,7 @@ const TodayEventsModal = ({ events = [] }) => {
         </div>
         <div className="max-h-[55vh] space-y-3 overflow-y-auto p-4">
           {events.map((event) => (
-            <Link key={event._id} to={`/event/${event._id}`} onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-2xl border border-slate-100 p-3 transition hover:border-emerald-200 hover:bg-emerald-50">
+            <Link key={event._id} to={`/events/${event._id}`} onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-2xl border border-slate-100 p-3 transition hover:border-emerald-200 hover:bg-emerald-50">
               {event.imageUrl ? <img src={event.imageUrl} alt="" className="h-14 w-14 rounded-xl object-cover" /> : <span className="grid h-14 w-14 place-items-center rounded-xl bg-emerald-100 text-emerald-700"><CalendarDays className="h-6 w-6" /></span>}
               <span className="min-w-0 flex-1"><span className="block truncate font-bold text-slate-900">{event.title}</span><span className="mt-1 flex items-center gap-1.5 text-xs text-slate-600"><MapPin className="h-3.5 w-3.5 text-emerald-700" />{event.venue || 'Venue'}{event.time ? ` · ${event.time}` : ''}</span></span>
             </Link>
