@@ -8,7 +8,7 @@ export class PushSubscription {
   @Prop({ required: true, unique: true, index: true })
   endpoint: string;
 
-  @Prop()
+  @Prop({ type: Number, default: null })
   expirationTime?: number | null;
 
   @Prop({ required: true, type: Object })
