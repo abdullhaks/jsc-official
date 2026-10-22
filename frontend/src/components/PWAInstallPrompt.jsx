@@ -14,11 +14,24 @@ const PWAInstallPrompt = () => {
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIOS(ios);
 
-    if (standalone || sessionStorage.getItem('jsc-pwa-dismissed')) return undefined;
+    const openInstallGuide = () => {
+      if (ios && !standalone) {
+        setVisible(true);
+        setShowIOSSteps(true);
+      }
+    };
+
+    window.addEventListener('jsc:show-install-guide', openInstallGuide);
+    if (standalone || sessionStorage.getItem('jsc-pwa-dismissed')) {
+      return () => window.removeEventListener('jsc:show-install-guide', openInstallGuide);
+    }
 
     if (ios) {
       const timer = window.setTimeout(() => setVisible(true), 1800);
-      return () => window.clearTimeout(timer);
+      return () => {
+        window.clearTimeout(timer);
+        window.removeEventListener('jsc:show-install-guide', openInstallGuide);
+      };
     }
 
     const onInstallPrompt = (event) => {
@@ -27,7 +40,10 @@ const PWAInstallPrompt = () => {
       setVisible(true);
     };
     window.addEventListener('beforeinstallprompt', onInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', onInstallPrompt);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onInstallPrompt);
+      window.removeEventListener('jsc:show-install-guide', openInstallGuide);
+    };
   }, []);
 
   const dismiss = () => {
@@ -81,11 +97,12 @@ const PWAInstallPrompt = () => {
             <motion.div initial={{ scale: 0.94, y: 16 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-sm rounded-3xl border border-white/10 bg-slate-900 p-6 text-white shadow-2xl">
               <img src={appIcon} alt="JSC app" className="mx-auto mb-4 h-16 w-16 rounded-2xl ring-1 ring-white/15" />
               <h2 className="text-center text-lg font-bold">Add JSC to your Home Screen</h2>
-              <p className="mt-2 text-center text-sm text-slate-300">In Safari, follow these three quick steps.</p>
+              <p className="mt-2 text-center text-sm text-slate-300">Install first, then enable notifications from the JSC app.</p>
               <ol className="mt-5 space-y-3 text-sm text-slate-200">
                 <li className="flex gap-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-400/15 font-bold text-emerald-300">1</span><span>Tap the <Share className="inline h-4 w-4 text-sky-300" /> <strong>Share</strong> button in the browser toolbar.</span></li>
                 <li className="flex gap-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-400/15 font-bold text-emerald-300">2</span><span>Choose <PlusSquare className="inline h-4 w-4 text-emerald-300" /> <strong>Add to Home Screen</strong>.</span></li>
                 <li className="flex gap-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-400/15 font-bold text-emerald-300">3</span><span>Tap <strong>Add</strong> to finish.</span></li>
+                <li className="flex gap-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-400/15 font-bold text-emerald-300">4</span><span>Open <strong>JSC</strong> from your Home Screen, then tap <strong>Enable notifications</strong>.</span></li>
               </ol>
               <button onClick={() => setShowIOSSteps(false)} className="mt-6 w-full rounded-xl bg-white/10 py-3 text-sm font-bold transition hover:bg-white/15">Got it</button>
             </motion.div>

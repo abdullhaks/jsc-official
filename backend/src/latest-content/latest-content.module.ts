@@ -4,11 +4,13 @@ import { LatestContentController } from './latest-content.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { LatestContent, LatestContentSchema } from './latest-content.schema';
 import { CloudinaryModule } from '../common/cloudinary/cloudinary.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: LatestContent.name, schema: LatestContentSchema }]),
     CloudinaryModule,
+    NotificationsModule,
   ],
   providers: [LatestContentService],
   controllers: [LatestContentController],

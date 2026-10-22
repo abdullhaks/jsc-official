@@ -4,12 +4,14 @@ import { Model } from 'mongoose';
 import { Memory, MemoryDocument } from './memory.schema';
 import { CreateMemoryDto, UpdateMemoryDto } from './dto/memory.dto';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class MemoriesService {
   constructor(
     @InjectModel(Memory.name) private model: Model<MemoryDocument>,
     private cloudinaryService: CloudinaryService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async findAll(skip: number, limit: number) {
@@ -36,7 +38,9 @@ export class MemoriesService {
       imageUrl = upload.secure_url;
       imagePublicId = upload.public_id;
     }
-    return this.model.create({ ...createDto, imageUrl, imagePublicId });
+    const memory = await this.model.create({ ...createDto, imageUrl, imagePublicId });
+    void this.notificationsService.notifyNewMemory(memory).catch(() => undefined);
+    return memory;
   }
 
   async update(id: string, updateDto: UpdateMemoryDto, file?: Express.Multer.File) {

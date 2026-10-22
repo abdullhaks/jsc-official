@@ -23,8 +23,8 @@ export class AuthService {
 
   async login(admin: any) {
     const payload = { username: admin.username, sub: admin._id, role: admin.role };
-    const accessTokenSecret = this.configService.get('JWT_ACCESS_SECRET') || 'change_me_access_secret';
-    const refreshTokenSecret = this.configService.get('JWT_REFRESH_SECRET') || 'change_me_refresh_secret';
+    const accessTokenSecret = this.configService.getOrThrow<string>('JWT_ACCESS_SECRET');
+    const refreshTokenSecret = this.configService.getOrThrow<string>('JWT_REFRESH_SECRET');
     const accessExpiresIn = this.configService.get('JWT_ACCESS_EXPIRES_IN') || '15m';
     const refreshExpiresIn = this.configService.get('JWT_REFRESH_EXPIRES_IN') || '7d';
 

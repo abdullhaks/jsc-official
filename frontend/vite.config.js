@@ -13,6 +13,7 @@ export default defineConfig({
       filename: 'sw.js',
       registerType: 'autoUpdate',
       manifest: {
+        id: '/',
         name: 'Jeelani Studies Centre',
         short_name: 'JSC',
         description: 'A centre for Islamic studies, Sufism, and education',
@@ -20,6 +21,7 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
+        scope: '/',
         icons: [
           {
             src: 'https://ik.imagekit.io/aksWebSolutions/JSC/JSC_APP_ICON.png?updatedAt=1754539840889',

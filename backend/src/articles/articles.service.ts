@@ -4,12 +4,14 @@ import { Model } from 'mongoose';
 import { Article, ArticleDocument } from './article.schema';
 import { CreateArticleDto, UpdateArticleDto } from './dto/article.dto';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ArticlesService {
   constructor(
     @InjectModel(Article.name) private model: Model<ArticleDocument>,
     private cloudinaryService: CloudinaryService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async findAll(skip: number, limit: number) {
@@ -51,7 +53,9 @@ export class ArticlesService {
       inlineImages.push({ url: upload.secure_url, publicId: upload.public_id, position: 2 });
     }
 
-    return this.model.create({ ...createDto, coverImageUrl, coverImagePublicId, inlineImages });
+    const article = await this.model.create({ ...createDto, coverImageUrl, coverImagePublicId, inlineImages });
+    void this.notificationsService.notifyNewArticle(article).catch(() => undefined);
+    return article;
   }
 
   async update(

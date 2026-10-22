@@ -5,12 +5,14 @@ import { Model } from 'mongoose';
 import { Event, EventDocument } from './event.schema';
 import { CreateEventDto, UpdateEventDto } from './dto/event.dto';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class EventsService {
   constructor(
     @InjectModel(Event.name) private eventModel: Model<EventDocument>,
     private cloudinaryService: CloudinaryService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async findAll(skip: number, limit: number, status?: string) {
@@ -29,6 +31,12 @@ export class EventsService {
     return this.eventModel.find().sort({ createdAt: -1 }).exec();
   }
 
+  async findById(id: string) {
+    const event = await this.eventModel.findById(id).exec();
+    if (!event) throw new NotFoundException('Event not found');
+    return event;
+  }
+
   async create(createDto: CreateEventDto, file?: Express.Multer.File) {
     let imageUrl = '';
     let imagePublicId = '';
@@ -44,7 +52,9 @@ export class EventsService {
       imageUrl,
       imagePublicId,
     });
-    return created.save();
+    const event = await created.save();
+    void this.notificationsService.notifyNewEvent(event).catch(() => undefined);
+    return event;
   }
 
   async update(id: string, updateDto: UpdateEventDto, file?: Express.Multer.File) {

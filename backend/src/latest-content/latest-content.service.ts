@@ -4,12 +4,14 @@ import { Model } from 'mongoose';
 import { LatestContent, LatestContentDocument } from './latest-content.schema';
 import { CreateLatestContentDto, UpdateLatestContentDto } from './dto/latest-content.dto';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class LatestContentService {
   constructor(
     @InjectModel(LatestContent.name) private model: Model<LatestContentDocument>,
     private cloudinaryService: CloudinaryService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async findAll(skip: number, limit: number) {
@@ -30,7 +32,9 @@ export class LatestContentService {
       imageUrl = upload.secure_url;
       imagePublicId = upload.public_id;
     }
-    return this.model.create({ ...createDto, imageUrl, imagePublicId });
+    const content = await this.model.create({ ...createDto, imageUrl, imagePublicId });
+    void this.notificationsService.notifyNewContent(content).catch(() => undefined);
+    return content;
   }
 
   async update(id: string, updateDto: UpdateLatestContentDto, file?: Express.Multer.File) {

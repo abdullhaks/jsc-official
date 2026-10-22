@@ -14,6 +14,7 @@ import { MemoriesModule } from './memories/memories.module';
 import { PublicationsModule } from './publications/publications.module';
 import { DownloadsModule } from './downloads/downloads.module';
 import { ArticlesModule } from './articles/articles.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
@@ -42,6 +43,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     PublicationsModule,
     DownloadsModule,
     ArticlesModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

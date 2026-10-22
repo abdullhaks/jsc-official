@@ -24,6 +24,18 @@ export class EventsController {
     return this.eventsService.getPublicSummary();
   }
 
+  @Public()
+  @Get('events/:id/share')
+  share(@Param('id') id: string) {
+    return { shareUrl: `/events/${id}`, text: 'Check out this event!' };
+  }
+
+  @Public()
+  @Get('events/:id')
+  findOne(@Param('id') id: string) {
+    return this.eventsService.findById(id);
+  }
+
   @Get('admin/events')
   findAllAdmin() {
     return this.eventsService.findAllAdmin();
@@ -51,9 +63,4 @@ export class EventsController {
     return this.eventsService.remove(id);
   }
 
-  @Public()
-  @Get('events/:id/share')
-  async share(@Param('id') id: string) {
-    return { shareUrl: `/events/${id}`, text: 'Check out this event!' };
-  }
 }

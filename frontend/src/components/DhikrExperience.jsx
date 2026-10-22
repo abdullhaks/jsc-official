@@ -27,7 +27,7 @@ const Contents = ({ readings }) => {
         <div className="relative mx-auto max-w-3xl text-center">
           <div className="mb-4 flex items-center justify-center gap-3 text-[#e8cc7d]"><span className="h-px w-10 bg-[#d6b861]" />✦<span className="h-px w-10 bg-[#d6b861]" /></div>
           <h1 dir="rtl" lang="ar" className="mt-4 font-serif text-4xl font-bold tracking-tight text-[#fff8df] sm:text-5xl">صلّوا على الحبيب ﷺ</h1>
-          <p dir="rtl" lang="ar" className="mx-auto mt-5 max-w-2xl font-serif text-xl leading-9 text-[#f6df9b]">اوراد مأثورة عن المشايخ في الصلاه على النبي المختار ﷺ<br />الترتيب والاجازة<br />-الشيخ محمد عبد الرحيم شاه القادري الجشتي</p>
+          <p dir="rtl" lang="ar" className="mx-auto mt-5 max-w-2xl font-serif text-xl leading-9 text-[#f6df9b]">اوراد مأثورة عن المشايخ في الصلاه على النبي المختار ﷺ<br />الترتيب والاجازة<br />الشيخ محمد عبد الرحيم شاه القادري الجشتي</p>
           <div className="mt-5 flex items-center justify-center gap-3 text-[#e8cc7d]"><span className="h-px w-16 bg-[#d6b861]" />❖<span className="h-px w-16 bg-[#d6b861]" /></div>
         </div>
       </section>
